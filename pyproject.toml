@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pathrover"
+version = "1.0.0"
+description = "Automated path traversal exploitation tool for confirmed vulnerabilities"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx[http2]>=0.27.0",
+    "anyio>=4.0.0",
+]
+
+[project.scripts]
+pathrover = "pathrover.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pathrover"]

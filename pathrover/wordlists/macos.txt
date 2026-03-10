@@ -1,0 +1,480 @@
+# PathROVER macOS Wordlist
+# High-value path traversal targets - no wildcards, no leading slash
+# ~300 highest-value paths. Both /private/etc and /etc variants included where relevant.
+# Intel Homebrew: usr/local/ | Apple Silicon Homebrew: opt/homebrew/
+
+# ---------------------------------------------------------------------------
+# SYSTEM CREDENTIALS
+# ---------------------------------------------------------------------------
+private/etc/passwd
+private/etc/master.passwd
+private/etc/shadow
+private/etc/sudoers
+private/etc/group
+etc/passwd
+etc/master.passwd
+etc/sudoers
+etc/group
+
+# ---------------------------------------------------------------------------
+# MACOS SHADOW / LOCAL ACCOUNT HASHES
+# ---------------------------------------------------------------------------
+private/var/db/shadow/hash
+private/var/db/dslocal/nodes/Default/users/root.plist
+private/var/db/dslocal/nodes/Default/users/admin.plist
+private/var/db/dslocal/nodes/Default/users/administrator.plist
+private/var/db/dslocal/nodes/Default/groups/admin.plist
+private/var/db/dslocal/nodes/Default/groups/com.apple.access_ssh.plist
+
+# ---------------------------------------------------------------------------
+# NETWORK AND HOST CONFIG
+# ---------------------------------------------------------------------------
+private/etc/hosts
+private/etc/resolv.conf
+private/etc/shells
+private/etc/sysctl.conf
+private/etc/rc.common
+etc/hosts
+etc/resolv.conf
+
+# ---------------------------------------------------------------------------
+# SSH - SYSTEM
+# ---------------------------------------------------------------------------
+private/etc/ssh/sshd_config
+private/etc/ssh/ssh_config
+private/etc/ssh/ssh_host_rsa_key
+private/etc/ssh/ssh_host_rsa_key.pub
+private/etc/ssh/ssh_host_ecdsa_key
+private/etc/ssh/ssh_host_ecdsa_key.pub
+private/etc/ssh/ssh_host_ed25519_key
+private/etc/ssh/ssh_host_ed25519_key.pub
+etc/ssh/sshd_config
+etc/ssh/ssh_host_rsa_key
+etc/ssh/ssh_host_ed25519_key
+
+# ---------------------------------------------------------------------------
+# SSH - root (macOS root home is /private/var/root)
+# ---------------------------------------------------------------------------
+private/var/root/.ssh/id_rsa
+private/var/root/.ssh/id_ed25519
+private/var/root/.ssh/id_ecdsa
+private/var/root/.ssh/authorized_keys
+private/var/root/.ssh/known_hosts
+private/var/root/.ssh/config
+
+# ---------------------------------------------------------------------------
+# SSH - admin
+# ---------------------------------------------------------------------------
+Users/admin/.ssh/id_rsa
+Users/admin/.ssh/id_ed25519
+Users/admin/.ssh/id_ecdsa
+Users/admin/.ssh/authorized_keys
+Users/admin/.ssh/known_hosts
+Users/admin/.ssh/config
+
+# ---------------------------------------------------------------------------
+# SSH - user
+# ---------------------------------------------------------------------------
+Users/user/.ssh/id_rsa
+Users/user/.ssh/id_ed25519
+Users/user/.ssh/authorized_keys
+Users/user/.ssh/config
+
+# ---------------------------------------------------------------------------
+# SSH - developer
+# ---------------------------------------------------------------------------
+Users/developer/.ssh/id_rsa
+Users/developer/.ssh/id_ed25519
+Users/developer/.ssh/authorized_keys
+Users/developer/.ssh/config
+
+# ---------------------------------------------------------------------------
+# SSH - deploy
+# ---------------------------------------------------------------------------
+Users/deploy/.ssh/id_rsa
+Users/deploy/.ssh/id_ed25519
+Users/deploy/.ssh/authorized_keys
+
+# ---------------------------------------------------------------------------
+# SSH - jenkins / gitlab
+# ---------------------------------------------------------------------------
+Users/jenkins/.ssh/id_rsa
+Users/jenkins/.ssh/id_ed25519
+Users/jenkins/.ssh/authorized_keys
+Users/gitlab/.ssh/id_rsa
+Users/gitlab/.ssh/id_ed25519
+Users/gitlab/.ssh/authorized_keys
+
+# ---------------------------------------------------------------------------
+# MACOS KEYCHAIN DATABASES
+# ---------------------------------------------------------------------------
+Library/Keychains/System.keychain
+Library/Keychains/login.keychain-db
+Library/Keychains/login.keychain
+private/var/db/SystemKey
+Users/admin/Library/Keychains/login.keychain-db
+Users/admin/Library/Keychains/login.keychain
+Users/administrator/Library/Keychains/login.keychain-db
+Users/user/Library/Keychains/login.keychain-db
+Users/developer/Library/Keychains/login.keychain-db
+Users/deploy/Library/Keychains/login.keychain-db
+Users/jenkins/Library/Keychains/login.keychain-db
+
+# ---------------------------------------------------------------------------
+# MACOS SPECIFIC SYSTEM FILES
+# ---------------------------------------------------------------------------
+Library/Preferences/SystemConfiguration/preferences.plist
+Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist
+Library/Preferences/SystemConfiguration/NetworkInterfaces.plist
+Library/Preferences/com.apple.TimeMachine.plist
+Library/Application Support/com.apple.TCC/TCC.db
+private/etc/security/audit_control
+private/etc/authorization
+private/etc/krb5.keytab
+private/etc/pam.d/sudo
+private/etc/pam.d/sshd
+
+# ---------------------------------------------------------------------------
+# MDM / CONFIGURATION PROFILES
+# ---------------------------------------------------------------------------
+private/var/db/ConfigurationProfiles/Store/Installed/MDMProfile-1.mobileconfig
+private/var/db/ConfigurationProfiles/Settings/.profilesAreInstalled
+
+# ---------------------------------------------------------------------------
+# WEB SERVER - macOS BUILT-IN APACHE
+# ---------------------------------------------------------------------------
+private/etc/apache2/httpd.conf
+private/etc/apache2/extra/httpd-vhosts.conf
+private/etc/apache2/extra/httpd-ssl.conf
+private/etc/apache2/.htpasswd
+etc/apache2/httpd.conf
+Library/WebServer/Documents/.env
+Library/WebServer/Documents/wp-config.php
+Library/WebServer/Documents/config.php
+Library/WebServer/Documents/.htpasswd
+
+# ---------------------------------------------------------------------------
+# WEB SERVER - HOMEBREW NGINX (Intel + ARM)
+# ---------------------------------------------------------------------------
+usr/local/etc/nginx/nginx.conf
+usr/local/etc/nginx/servers/default.conf
+opt/homebrew/etc/nginx/nginx.conf
+opt/homebrew/etc/nginx/servers/default.conf
+
+# ---------------------------------------------------------------------------
+# PHP - HOMEBREW (versions 8.1-8.3, Intel + ARM)
+# ---------------------------------------------------------------------------
+usr/local/etc/php/8.1/php.ini
+usr/local/etc/php/8.1/php-fpm.conf
+usr/local/etc/php/8.1/php-fpm.d/www.conf
+usr/local/etc/php/8.2/php.ini
+usr/local/etc/php/8.2/php-fpm.conf
+usr/local/etc/php/8.2/php-fpm.d/www.conf
+usr/local/etc/php/8.3/php.ini
+usr/local/etc/php/8.3/php-fpm.conf
+usr/local/etc/php/8.3/php-fpm.d/www.conf
+opt/homebrew/etc/php/8.1/php.ini
+opt/homebrew/etc/php/8.1/php-fpm.conf
+opt/homebrew/etc/php/8.2/php.ini
+opt/homebrew/etc/php/8.2/php-fpm.conf
+opt/homebrew/etc/php/8.3/php.ini
+opt/homebrew/etc/php/8.3/php-fpm.conf
+
+# ---------------------------------------------------------------------------
+# DATABASE - POSTGRESQL (versions 14-16, Intel + ARM)
+# ---------------------------------------------------------------------------
+usr/local/var/postgresql@14/pg_hba.conf
+usr/local/var/postgresql@14/postgresql.conf
+usr/local/var/postgresql@15/pg_hba.conf
+usr/local/var/postgresql@15/postgresql.conf
+usr/local/var/postgresql@16/pg_hba.conf
+usr/local/var/postgresql@16/postgresql.conf
+opt/homebrew/var/postgresql@14/pg_hba.conf
+opt/homebrew/var/postgresql@14/postgresql.conf
+opt/homebrew/var/postgresql@15/pg_hba.conf
+opt/homebrew/var/postgresql@15/postgresql.conf
+opt/homebrew/var/postgresql@16/pg_hba.conf
+opt/homebrew/var/postgresql@16/postgresql.conf
+
+# ---------------------------------------------------------------------------
+# DATABASE - MYSQL (8.0, Intel + ARM)
+# ---------------------------------------------------------------------------
+usr/local/etc/my.cnf
+usr/local/etc/my.cnf.d/mysqld.cnf
+opt/homebrew/etc/my.cnf
+opt/homebrew/etc/my.cnf.d/mysqld.cnf
+usr/local/var/mysql/error.log
+opt/homebrew/var/mysql/error.log
+
+# ---------------------------------------------------------------------------
+# DATABASE - REDIS
+# ---------------------------------------------------------------------------
+usr/local/etc/redis.conf
+opt/homebrew/etc/redis.conf
+usr/local/var/log/redis.log
+opt/homebrew/var/log/redis.log
+
+# ---------------------------------------------------------------------------
+# LOG FILES
+# ---------------------------------------------------------------------------
+private/var/log/system.log
+private/var/log/secure.log
+private/var/log/install.log
+private/var/log/authd.log
+private/var/log/apache2/access_log
+private/var/log/apache2/error_log
+usr/local/var/log/nginx/access.log
+usr/local/var/log/nginx/error.log
+opt/homebrew/var/log/nginx/access.log
+opt/homebrew/var/log/nginx/error.log
+usr/local/var/log/postgresql@14.log
+usr/local/var/log/postgresql@15.log
+usr/local/var/log/postgresql@16.log
+opt/homebrew/var/log/postgresql@15.log
+opt/homebrew/var/log/postgresql@16.log
+
+# ---------------------------------------------------------------------------
+# SHELL HISTORY - root
+# ---------------------------------------------------------------------------
+private/var/root/.bash_history
+private/var/root/.zsh_history
+private/var/root/.zsh_sessions
+
+# ---------------------------------------------------------------------------
+# SHELL HISTORY - admin
+# ---------------------------------------------------------------------------
+Users/admin/.bash_history
+Users/admin/.zsh_history
+Users/admin/.zsh_sessions
+
+# ---------------------------------------------------------------------------
+# SHELL HISTORY - user / developer / deploy
+# ---------------------------------------------------------------------------
+Users/user/.bash_history
+Users/user/.zsh_history
+Users/developer/.bash_history
+Users/developer/.zsh_history
+Users/deploy/.bash_history
+Users/deploy/.zsh_history
+
+# ---------------------------------------------------------------------------
+# SHELL HISTORY - jenkins / gitlab / ansible
+# ---------------------------------------------------------------------------
+Users/jenkins/.bash_history
+Users/jenkins/.zsh_history
+Users/gitlab/.bash_history
+Users/gitlab/.zsh_history
+Users/ansible/.bash_history
+Users/ansible/.zsh_history
+
+# ---------------------------------------------------------------------------
+# SHELL RC / PROFILE FILES
+# ---------------------------------------------------------------------------
+private/var/root/.bash_profile
+private/var/root/.zshrc
+private/var/root/.zshenv
+private/var/root/.profile
+Users/admin/.bash_profile
+Users/admin/.bashrc
+Users/admin/.zshrc
+Users/admin/.zshenv
+Users/admin/.zprofile
+Users/developer/.bash_profile
+Users/developer/.zshrc
+Users/developer/.zshenv
+Users/deploy/.zshrc
+Users/deploy/.zshenv
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - AWS (per user)
+# ---------------------------------------------------------------------------
+private/var/root/.aws/credentials
+private/var/root/.aws/config
+Users/admin/.aws/credentials
+Users/admin/.aws/config
+Users/user/.aws/credentials
+Users/developer/.aws/credentials
+Users/developer/.aws/config
+Users/deploy/.aws/credentials
+Users/deploy/.aws/config
+Users/jenkins/.aws/credentials
+Users/jenkins/.aws/config
+Users/gitlab/.aws/credentials
+Users/ansible/.aws/credentials
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - GCP
+# ---------------------------------------------------------------------------
+private/var/root/.config/gcloud/credentials.db
+private/var/root/.config/gcloud/application_default_credentials.json
+Users/admin/.config/gcloud/credentials.db
+Users/admin/.config/gcloud/application_default_credentials.json
+Users/developer/.config/gcloud/credentials.db
+Users/developer/.config/gcloud/application_default_credentials.json
+Users/deploy/.config/gcloud/credentials.db
+Users/jenkins/.config/gcloud/credentials.db
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - AZURE
+# ---------------------------------------------------------------------------
+private/var/root/.azure/azureProfile.json
+private/var/root/.azure/accessTokens.json
+Users/admin/.azure/azureProfile.json
+Users/admin/.azure/accessTokens.json
+Users/admin/.azure/msal_token_cache.json
+Users/developer/.azure/azureProfile.json
+Users/deploy/.azure/accessTokens.json
+Users/jenkins/.azure/accessTokens.json
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - KUBERNETES
+# ---------------------------------------------------------------------------
+private/var/root/.kube/config
+Users/admin/.kube/config
+Users/developer/.kube/config
+Users/deploy/.kube/config
+Users/jenkins/.kube/config
+Users/gitlab/.kube/config
+Users/ansible/.kube/config
+
+# ---------------------------------------------------------------------------
+# DOCKER
+# ---------------------------------------------------------------------------
+private/var/root/.docker/config.json
+Users/admin/.docker/config.json
+Users/developer/.docker/config.json
+Users/deploy/.docker/config.json
+Users/jenkins/.docker/config.json
+
+# ---------------------------------------------------------------------------
+# DEV TOOL CREDENTIALS
+# ---------------------------------------------------------------------------
+private/var/root/.gitconfig
+private/var/root/.npmrc
+private/var/root/.pypirc
+private/var/root/.vault-token
+private/var/root/.terraform.d/credentials.tfrc.json
+private/var/root/.netrc
+Users/admin/.gitconfig
+Users/admin/.npmrc
+Users/admin/.pypirc
+Users/admin/.gem/credentials
+Users/admin/.vault-token
+Users/admin/.terraform.d/credentials.tfrc.json
+Users/admin/.netrc
+Users/admin/.config/gh/hosts.yml
+Users/developer/.gitconfig
+Users/developer/.npmrc
+Users/developer/.pypirc
+Users/developer/.gem/credentials
+Users/developer/.vault-token
+Users/developer/.terraform.d/credentials.tfrc.json
+Users/developer/.config/gh/hosts.yml
+Users/deploy/.gitconfig
+Users/deploy/.npmrc
+Users/deploy/.netrc
+Users/deploy/.vault-token
+Users/jenkins/.gitconfig
+Users/jenkins/.npmrc
+Users/jenkins/.m2/settings.xml
+Users/jenkins/.config/gh/hosts.yml
+
+# ---------------------------------------------------------------------------
+# ENV FILES
+# ---------------------------------------------------------------------------
+Users/admin/.env
+Users/admin/.env.production
+Users/developer/.env
+Users/developer/.env.production
+Users/deploy/.env
+Users/deploy/.env.production
+
+# ---------------------------------------------------------------------------
+# BROWSER CREDENTIALS - CHROME
+# ---------------------------------------------------------------------------
+Users/admin/Library/Application Support/Google/Chrome/Default/Login Data
+Users/admin/Library/Application Support/Google/Chrome/Default/Cookies
+Users/admin/Library/Application Support/Google/Chrome/Default/Web Data
+Users/administrator/Library/Application Support/Google/Chrome/Default/Login Data
+Users/user/Library/Application Support/Google/Chrome/Default/Login Data
+Users/user/Library/Application Support/Google/Chrome/Default/Cookies
+Users/developer/Library/Application Support/Google/Chrome/Default/Login Data
+
+# ---------------------------------------------------------------------------
+# BROWSER CREDENTIALS - FIREFOX
+# ---------------------------------------------------------------------------
+Users/admin/Library/Application Support/Firefox/profiles.ini
+Users/admin/Library/Application Support/Firefox/Profiles/logins.json
+Users/admin/Library/Application Support/Firefox/Profiles/key4.db
+Users/admin/Library/Application Support/Firefox/Profiles/cookies.sqlite
+Users/user/Library/Application Support/Firefox/profiles.ini
+Users/developer/Library/Application Support/Firefox/profiles.ini
+
+# ---------------------------------------------------------------------------
+# BROWSER CREDENTIALS - SAFARI
+# ---------------------------------------------------------------------------
+Users/admin/Library/Safari/History.db
+Users/admin/Library/Safari/Bookmarks.plist
+Users/administrator/Library/Safari/History.db
+Users/user/Library/Safari/History.db
+
+# ---------------------------------------------------------------------------
+# CI/CD - JENKINS
+# ---------------------------------------------------------------------------
+Users/jenkins/.jenkins/secrets/master.key
+Users/jenkins/.jenkins/secrets/hudson.util.Secret
+Users/jenkins/.jenkins/credentials.xml
+Users/jenkins/.jenkins/config.xml
+Library/Application Support/Jenkins/home/credentials.xml
+Library/Application Support/Jenkins/home/secrets/master.key
+
+# ---------------------------------------------------------------------------
+# CI/CD - GITLAB RUNNER
+# ---------------------------------------------------------------------------
+etc/gitlab-runner/config.toml
+usr/local/etc/gitlab-runner/config.toml
+opt/homebrew/etc/gitlab-runner/config.toml
+Users/gitlab/.gitlab-runner/config.toml
+Users/admin/.gitlab-runner/config.toml
+
+# ---------------------------------------------------------------------------
+# CI/CD - ANSIBLE
+# ---------------------------------------------------------------------------
+etc/ansible/ansible.cfg
+etc/ansible/hosts
+Users/ansible/ansible.cfg
+Users/ansible/.ansible_vault_pass
+Users/admin/.ansible.cfg
+Users/developer/.ansible.cfg
+
+# ---------------------------------------------------------------------------
+# MAMP (popular macOS dev environment)
+# ---------------------------------------------------------------------------
+Applications/MAMP/conf/apache/httpd.conf
+Applications/MAMP/conf/php8.1.x/php.ini
+Applications/MAMP/conf/php8.2.x/php.ini
+Applications/MAMP/conf/mysql/my.cnf
+Applications/MAMP/logs/apache_error.log
+Applications/MAMP/logs/php_error.log
+Applications/MAMP PRO/conf/apache/httpd.conf
+
+# ---------------------------------------------------------------------------
+# XAMPP macOS
+# ---------------------------------------------------------------------------
+Applications/XAMPP/etc/httpd.conf
+Applications/XAMPP/etc/php.ini
+Applications/XAMPP/etc/my.cnf
+Applications/XAMPP/logs/access_log
+Applications/XAMPP/logs/error_log
+
+# ---------------------------------------------------------------------------
+# WEB APP SECRETS
+# ---------------------------------------------------------------------------
+usr/local/var/www/.env
+usr/local/var/www/wp-config.php
+opt/homebrew/var/www/.env
+opt/homebrew/var/www/wp-config.php
+Users/admin/Sites/app/.env
+Users/developer/Sites/app/.env
+Users/admin/Sites/wordpress/wp-config.php
+Users/developer/Sites/wordpress/wp-config.php

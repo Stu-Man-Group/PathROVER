@@ -1,0 +1,515 @@
+# PathROVER Windows Wordlist
+# High-value path traversal targets - no wildcards, no leading backslash, no drive letter
+# Backslash separators. Organized by category with sensitivity annotations.
+
+# ---------------------------------------------------------------------------
+# REGISTRY HIVES - LIVE
+# ---------------------------------------------------------------------------
+Windows\System32\config\SAM
+Windows\System32\config\SYSTEM
+Windows\System32\config\SECURITY
+Windows\System32\config\SOFTWARE
+Windows\System32\config\DEFAULT
+
+# ---------------------------------------------------------------------------
+# REGISTRY HIVES - REPAIR BACKUP (often world-readable)
+# ---------------------------------------------------------------------------
+Windows\repair\SAM
+Windows\repair\SYSTEM
+Windows\repair\SECURITY
+Windows\repair\SOFTWARE
+Windows\repair\DEFAULT
+
+# ---------------------------------------------------------------------------
+# REGISTRY HIVES - REGBACK (VSS backup copies)
+# ---------------------------------------------------------------------------
+Windows\System32\config\RegBack\SAM
+Windows\System32\config\RegBack\SYSTEM
+Windows\System32\config\RegBack\SECURITY
+Windows\System32\config\RegBack\SOFTWARE
+Windows\System32\config\RegBack\DEFAULT
+
+# ---------------------------------------------------------------------------
+# IIS CONFIGURATION
+# ---------------------------------------------------------------------------
+Windows\System32\inetsrv\config\applicationHost.config
+Windows\System32\inetsrv\config\redirection.config
+Windows\System32\inetsrv\config\administration.config
+inetpub\wwwroot\web.config
+inetpub\wwwroot\global.asax
+inetpub\wwwroot\connectionstrings.config
+inetpub\wwwroot\appSettings.config
+inetpub\wwwroot\appsettings.json
+inetpub\wwwroot\App_Data\database.mdf
+inetpub\wwwroot\App_Data\database.ldf
+
+# ---------------------------------------------------------------------------
+# ASP.NET MACHINE AND APP CONFIGS - .NET Framework
+# ---------------------------------------------------------------------------
+Windows\Microsoft.NET\Framework\v2.0.50727\CONFIG\machine.config
+Windows\Microsoft.NET\Framework\v2.0.50727\CONFIG\web.config
+Windows\Microsoft.NET\Framework\v4.0.30319\Config\machine.config
+Windows\Microsoft.NET\Framework\v4.0.30319\Config\web.config
+Windows\Microsoft.NET\Framework64\v2.0.50727\CONFIG\machine.config
+Windows\Microsoft.NET\Framework64\v2.0.50727\CONFIG\web.config
+Windows\Microsoft.NET\Framework64\v4.0.30319\Config\machine.config
+Windows\Microsoft.NET\Framework64\v4.0.30319\Config\web.config
+
+# ---------------------------------------------------------------------------
+# UNATTEND / SYSPREP / PANTHER - deployment credential leakage
+# ---------------------------------------------------------------------------
+Windows\Panther\Unattend.xml
+Windows\Panther\Unattended.xml
+Windows\Panther\unattend\Unattend.xml
+Windows\Panther\unattend\Unattended.xml
+Windows\Panther\setupact.log
+Windows\Panther\setuperr.log
+Windows\System32\sysprep\Unattend.xml
+Windows\System32\sysprep\unattended.xml
+Windows\System32\sysprep\Panther\unattend.xml
+unattend.xml
+Unattended.xml
+sysprep\sysprep.xml
+
+# ---------------------------------------------------------------------------
+# SQL SERVER - MSSQLSERVER INSTANCE (versions 2014-2022)
+# MSSQL12=2014, MSSQL13=2016, MSSQL14=2017, MSSQL15=2019, MSSQL16=2022
+# ---------------------------------------------------------------------------
+Program Files\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQL\Log\ERRORLOG
+Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\Log\ERRORLOG
+Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Log\ERRORLOG
+Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\Log\ERRORLOG
+Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Log\ERRORLOG
+
+# ---------------------------------------------------------------------------
+# SQL SERVER - SQLEXPRESS INSTANCE
+# ---------------------------------------------------------------------------
+Program Files\Microsoft SQL Server\MSSQL12.SQLEXPRESS\MSSQL\Log\ERRORLOG
+Program Files\Microsoft SQL Server\MSSQL13.SQLEXPRESS\MSSQL\Log\ERRORLOG
+Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\Log\ERRORLOG
+Program Files\Microsoft SQL Server\MSSQL15.SQLEXPRESS\MSSQL\Log\ERRORLOG
+Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\Log\ERRORLOG
+
+# ---------------------------------------------------------------------------
+# MYSQL ON WINDOWS
+# ---------------------------------------------------------------------------
+Program Files\MySQL\MySQL Server 5.7\my.ini
+Program Files\MySQL\MySQL Server 8.0\my.ini
+Program Files\MySQL\MySQL Server 8.1\my.ini
+ProgramData\MySQL\MySQL Server 5.7\my.ini
+ProgramData\MySQL\MySQL Server 8.0\my.ini
+ProgramData\MySQL\MySQL Server 5.7\Data\mysql\user.MYD
+ProgramData\MySQL\MySQL Server 8.0\Data\mysql\user.MYD
+
+# ---------------------------------------------------------------------------
+# POSTGRESQL ON WINDOWS (versions 12-16)
+# ---------------------------------------------------------------------------
+Program Files\PostgreSQL\12\data\pg_hba.conf
+Program Files\PostgreSQL\12\data\postgresql.conf
+Program Files\PostgreSQL\13\data\pg_hba.conf
+Program Files\PostgreSQL\13\data\postgresql.conf
+Program Files\PostgreSQL\14\data\pg_hba.conf
+Program Files\PostgreSQL\14\data\postgresql.conf
+Program Files\PostgreSQL\15\data\pg_hba.conf
+Program Files\PostgreSQL\15\data\postgresql.conf
+Program Files\PostgreSQL\16\data\pg_hba.conf
+Program Files\PostgreSQL\16\data\postgresql.conf
+
+# ---------------------------------------------------------------------------
+# IIS / WEB SERVER LOGS
+# ---------------------------------------------------------------------------
+inetpub\logs\LogFiles\W3SVC1\u_ex.log
+inetpub\logs\LogFiles\W3SVC1\u_ex230101.log
+inetpub\logs\LogFiles\W3SVC1\u_ex240101.log
+inetpub\logs\LogFiles\W3SVC1\u_ex250101.log
+inetpub\logs\LogFiles\W3SVC2\u_ex.log
+inetpub\logs\LogFiles\HTTPERR\httperr1.log
+inetpub\logs\LogFiles\HTTPERR\httperr2.log
+Windows\System32\LogFiles\HTTPERR\httperr1.log
+Windows\System32\LogFiles\HTTPERR\httperr2.log
+
+# ---------------------------------------------------------------------------
+# WINDOWS EVENT LOGS (binary .evtx)
+# ---------------------------------------------------------------------------
+Windows\System32\winevt\Logs\Security.evtx
+Windows\System32\winevt\Logs\System.evtx
+Windows\System32\winevt\Logs\Application.evtx
+Windows\System32\winevt\Logs\Setup.evtx
+Windows\System32\winevt\Logs\Microsoft-Windows-PowerShell%4Operational.evtx
+Windows\System32\winevt\Logs\Microsoft-Windows-TaskScheduler%4Operational.evtx
+Windows\System32\winevt\Logs\Microsoft-Windows-TerminalServices-RemoteConnectionManager%4Operational.evtx
+Windows\System32\winevt\Logs\Microsoft-Windows-WinRM%4Operational.evtx
+Windows\System32\winevt\Logs\Microsoft-Windows-Sysmon%4Operational.evtx
+
+# ---------------------------------------------------------------------------
+# WINDOWS SYSTEM FILES
+# ---------------------------------------------------------------------------
+Windows\win.ini
+Windows\system.ini
+Windows\System32\drivers\etc\hosts
+Windows\System32\drivers\etc\networks
+Windows\System32\drivers\etc\protocol
+Windows\System32\drivers\etc\services
+Windows\debug\NetSetup.log
+Windows\Logs\CBS\CBS.log
+Windows\Logs\DISM\dism.log
+
+# ---------------------------------------------------------------------------
+# NTUSER.DAT (binary registry hives)
+# ---------------------------------------------------------------------------
+Users\Administrator\NTUSER.DAT
+Users\Default\NTUSER.DAT
+Users\admin\NTUSER.DAT
+Users\user\NTUSER.DAT
+Users\service\NTUSER.DAT
+Users\deploy\NTUSER.DAT
+
+# ---------------------------------------------------------------------------
+# POWERSHELL HISTORY - per user
+# ---------------------------------------------------------------------------
+Users\Administrator\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\Default\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\admin\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\user\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\test\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\service\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\svc\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\webapp\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\iisuser\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\deploy\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\jenkins\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\gitlab\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\ansible\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\sqlserver\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Users\postgres\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+
+# ---------------------------------------------------------------------------
+# DPAPI / WINDOWS CREDENTIAL MANAGER
+# ---------------------------------------------------------------------------
+Users\Administrator\AppData\Roaming\Microsoft\Credentials
+Users\Administrator\AppData\Local\Microsoft\Credentials
+Users\Administrator\AppData\Roaming\Microsoft\Protect
+Users\admin\AppData\Roaming\Microsoft\Credentials
+Users\admin\AppData\Local\Microsoft\Credentials
+Users\admin\AppData\Roaming\Microsoft\Protect
+Users\user\AppData\Roaming\Microsoft\Credentials
+Users\user\AppData\Local\Microsoft\Credentials
+Users\service\AppData\Roaming\Microsoft\Credentials
+Users\svc\AppData\Roaming\Microsoft\Credentials
+Users\webapp\AppData\Roaming\Microsoft\Credentials
+Users\deploy\AppData\Roaming\Microsoft\Credentials
+Users\jenkins\AppData\Roaming\Microsoft\Credentials
+Users\iisuser\AppData\Roaming\Microsoft\Credentials
+Windows\System32\config\systemprofile\AppData\Roaming\Microsoft\Credentials
+Windows\ServiceProfiles\LocalService\AppData\Roaming\Microsoft\Credentials
+Windows\ServiceProfiles\NetworkService\AppData\Roaming\Microsoft\Credentials
+
+# ---------------------------------------------------------------------------
+# SSH KEYS - OpenSSH on Windows (per user)
+# ---------------------------------------------------------------------------
+Users\Administrator\.ssh\id_rsa
+Users\Administrator\.ssh\id_ed25519
+Users\Administrator\.ssh\authorized_keys
+Users\Administrator\.ssh\config
+Users\admin\.ssh\id_rsa
+Users\admin\.ssh\id_ed25519
+Users\admin\.ssh\authorized_keys
+Users\user\.ssh\id_rsa
+Users\user\.ssh\id_ed25519
+Users\user\.ssh\authorized_keys
+Users\deploy\.ssh\id_rsa
+Users\deploy\.ssh\id_ed25519
+Users\deploy\.ssh\authorized_keys
+Users\jenkins\.ssh\id_rsa
+Users\jenkins\.ssh\id_ed25519
+Users\jenkins\.ssh\authorized_keys
+Users\service\.ssh\id_rsa
+Users\svc\.ssh\id_rsa
+ProgramData\ssh\sshd_config
+ProgramData\ssh\ssh_host_rsa_key
+ProgramData\ssh\ssh_host_ed25519_key
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - AWS (per user)
+# ---------------------------------------------------------------------------
+Users\Administrator\.aws\credentials
+Users\Administrator\.aws\config
+Users\admin\.aws\credentials
+Users\admin\.aws\config
+Users\user\.aws\credentials
+Users\deploy\.aws\credentials
+Users\jenkins\.aws\credentials
+Users\service\.aws\credentials
+Users\svc\.aws\credentials
+Users\webapp\.aws\credentials
+Users\gitlab\.aws\credentials
+Users\ansible\.aws\credentials
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - AZURE (per user)
+# ---------------------------------------------------------------------------
+Users\Administrator\.azure\accessTokens.json
+Users\Administrator\.azure\azureProfile.json
+Users\Administrator\.azure\msal_token_cache.json
+Users\admin\.azure\accessTokens.json
+Users\admin\.azure\msal_token_cache.json
+Users\user\.azure\accessTokens.json
+Users\deploy\.azure\accessTokens.json
+Users\jenkins\.azure\accessTokens.json
+Users\service\.azure\accessTokens.json
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - GCP (per user)
+# ---------------------------------------------------------------------------
+Users\Administrator\AppData\Roaming\gcloud\credentials.db
+Users\Administrator\AppData\Roaming\gcloud\application_default_credentials.json
+Users\admin\AppData\Roaming\gcloud\credentials.db
+Users\admin\AppData\Roaming\gcloud\application_default_credentials.json
+Users\user\AppData\Roaming\gcloud\credentials.db
+Users\deploy\AppData\Roaming\gcloud\credentials.db
+Users\jenkins\AppData\Roaming\gcloud\credentials.db
+Users\service\AppData\Roaming\gcloud\credentials.db
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - KUBERNETES (per user)
+# ---------------------------------------------------------------------------
+Users\Administrator\.kube\config
+Users\admin\.kube\config
+Users\user\.kube\config
+Users\deploy\.kube\config
+Users\jenkins\.kube\config
+Users\gitlab\.kube\config
+Users\service\.kube\config
+Users\ansible\.kube\config
+
+# ---------------------------------------------------------------------------
+# DOCKER FOR WINDOWS
+# ---------------------------------------------------------------------------
+Users\Administrator\.docker\config.json
+Users\admin\.docker\config.json
+Users\user\.docker\config.json
+Users\deploy\.docker\config.json
+Users\jenkins\.docker\config.json
+ProgramData\Docker\config\daemon.json
+ProgramData\DockerDesktop\settings.json
+
+# ---------------------------------------------------------------------------
+# CI/CD - JENKINS
+# ---------------------------------------------------------------------------
+Program Files\Jenkins\config.xml
+Program Files\Jenkins\credentials.xml
+Program Files\Jenkins\secrets\master.key
+Program Files\Jenkins\secrets\hudson.util.Secret
+Program Files\Jenkins\users\admin\config.xml
+Program Files (x86)\Jenkins\config.xml
+Program Files (x86)\Jenkins\credentials.xml
+Program Files (x86)\Jenkins\secrets\master.key
+Program Files (x86)\Jenkins\secrets\hudson.util.Secret
+Users\jenkins\AppData\Local\Jenkins\.jenkins\credentials.xml
+Users\jenkins\AppData\Local\Jenkins\.jenkins\secrets\master.key
+Users\jenkins\AppData\Local\Jenkins\.jenkins\secrets\hudson.util.Secret
+Users\jenkins\.jenkins\credentials.xml
+Users\jenkins\.jenkins\secrets\master.key
+Users\jenkins\.jenkins\secrets\hudson.util.Secret
+
+# ---------------------------------------------------------------------------
+# CI/CD - GITLAB RUNNER
+# ---------------------------------------------------------------------------
+Program Files\GitLab Runner\config.toml
+Program Files (x86)\GitLab Runner\config.toml
+Users\gitlab\.gitlab-runner\config.toml
+ProgramData\GitLab Runner\config.toml
+
+# ---------------------------------------------------------------------------
+# CI/CD - ANSIBLE / TERRAFORM
+# ---------------------------------------------------------------------------
+Users\ansible\.ansible\vault_pass.txt
+Users\ansible\.ansible.cfg
+Users\Administrator\.terraform.d\credentials.tfrc.json
+Users\admin\.terraform.d\credentials.tfrc.json
+Users\deploy\.terraform.d\credentials.tfrc.json
+Users\jenkins\.terraform.d\credentials.tfrc.json
+terraform.tfvars
+
+# ---------------------------------------------------------------------------
+# XAMPP / WAMP (dev environments)
+# ---------------------------------------------------------------------------
+xampp\apache\conf\httpd.conf
+xampp\apache\conf\extra\httpd-ssl.conf
+xampp\apache\logs\access.log
+xampp\apache\logs\error.log
+xampp\htdocs\wp-config.php
+xampp\htdocs\config.php
+xampp\phpMyAdmin\config.inc.php
+xampp\mysql\bin\my.ini
+wamp\www\config.php
+wamp\www\wp-config.php
+wamp64\www\config.php
+wamp64\www\wp-config.php
+wamp\bin\mysql\mysql5.7.36\my.ini
+wamp64\bin\mysql\mysql8.0.27\my.ini
+
+# ---------------------------------------------------------------------------
+# APACHE ON WINDOWS
+# ---------------------------------------------------------------------------
+Program Files\Apache Software Foundation\Apache2.4\conf\httpd.conf
+Program Files\Apache Software Foundation\Apache2.4\logs\access.log
+Program Files\Apache Software Foundation\Apache2.4\logs\error.log
+
+# ---------------------------------------------------------------------------
+# MISC HIGH-VALUE PATHS
+# ---------------------------------------------------------------------------
+Users\Administrator\Desktop\credentials.txt
+Users\Administrator\Desktop\passwords.txt
+Users\admin\Desktop\credentials.txt
+Users\admin\Desktop\passwords.txt
+Users\Administrator\Documents\passwords.txt
+Users\admin\Documents\passwords.txt
+Boot\BCD
+Recovery\ReAgent.xml
+
+# ---------------------------------------------------------------------------
+# WINDOWS TASK SCHEDULER XML (can contain cleartext credentials)
+# ---------------------------------------------------------------------------
+Windows\System32\Tasks\Microsoft\Windows\SoftwareProtectionPlatform\SvcRestartTask
+Windows\System32\Tasks\Microsoft\Windows\UpdateOrchestrator\Schedule Scan
+Windows\SysWOW64\Tasks\Microsoft\Windows\PLA\System\System Overview
+# Common custom/admin scheduled tasks — high value on enterprise targets
+Windows\System32\Tasks\backup
+Windows\System32\Tasks\Backup
+Windows\System32\Tasks\deploy
+Windows\System32\Tasks\Deploy
+Windows\System32\Tasks\update
+Windows\System32\Tasks\Update
+Windows\System32\Tasks\cleanup
+Windows\System32\Tasks\sync
+
+# ---------------------------------------------------------------------------
+# .NET USER SECRETS (ASP.NET Core / dotnet user-secrets)
+# ---------------------------------------------------------------------------
+Users\Administrator\AppData\Roaming\Microsoft\UserSecrets
+Users\admin\AppData\Roaming\Microsoft\UserSecrets
+Users\user\AppData\Roaming\Microsoft\UserSecrets
+Users\deploy\AppData\Roaming\Microsoft\UserSecrets
+Users\jenkins\AppData\Roaming\Microsoft\UserSecrets
+Users\webapp\AppData\Roaming\Microsoft\UserSecrets
+
+# ---------------------------------------------------------------------------
+# WINSCP SAVED SESSION FILES (often contain XOR-obfuscated passwords)
+# ---------------------------------------------------------------------------
+Users\Administrator\Documents\Default.ini
+Users\Administrator\AppData\Roaming\WinSCP.ini
+Users\admin\Documents\Default.ini
+Users\admin\AppData\Roaming\WinSCP.ini
+Users\user\Documents\Default.ini
+Users\user\AppData\Roaming\WinSCP.ini
+Users\deploy\AppData\Roaming\WinSCP.ini
+Users\jenkins\AppData\Roaming\WinSCP.ini
+Users\svc\AppData\Roaming\WinSCP.ini
+
+# ---------------------------------------------------------------------------
+# PUTTY SAVED SESSIONS (registry-based but sometimes exported)
+# ---------------------------------------------------------------------------
+Users\Administrator\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\PuTTY.log
+Users\admin\AppData\Local\Programs\PuTTY\putty.log
+
+# ---------------------------------------------------------------------------
+# OPENVPN / VPN CONFIGS
+# ---------------------------------------------------------------------------
+Program Files\OpenVPN\config
+Users\Administrator\OpenVPN\config
+Users\admin\OpenVPN\config
+Users\user\OpenVPN\config
+Users\deploy\OpenVPN\config
+
+# ---------------------------------------------------------------------------
+# MAVEN / JAVA (.m2 settings)
+# ---------------------------------------------------------------------------
+Users\Administrator\.m2\settings.xml
+Users\admin\.m2\settings.xml
+Users\user\.m2\settings.xml
+Users\deploy\.m2\settings.xml
+Users\jenkins\.m2\settings.xml
+
+# ---------------------------------------------------------------------------
+# RUBY / GEM CREDENTIALS
+# ---------------------------------------------------------------------------
+Users\Administrator\.gem\credentials
+Users\admin\.gem\credentials
+Users\developer\.gem\credentials
+Users\deploy\.gem\credentials
+
+# ---------------------------------------------------------------------------
+# GITHUB CLI TOKEN
+# ---------------------------------------------------------------------------
+Users\Administrator\AppData\Roaming\GitHub CLI\hosts.yml
+Users\admin\AppData\Roaming\GitHub CLI\hosts.yml
+Users\user\AppData\Roaming\GitHub CLI\hosts.yml
+Users\developer\AppData\Roaming\GitHub CLI\hosts.yml
+Users\deploy\AppData\Roaming\GitHub CLI\hosts.yml
+
+# ---------------------------------------------------------------------------
+# GIT CREDENTIAL STORE (plaintext https://user:token@host)
+# ---------------------------------------------------------------------------
+Users\Administrator\.git-credentials
+Users\admin\.git-credentials
+Users\user\.git-credentials
+Users\deploy\.git-credentials
+Users\jenkins\.git-credentials
+Users\developer\.git-credentials
+
+# ---------------------------------------------------------------------------
+# RDCMAN - Remote Desktop Connection Manager session files (DPAPI-encrypted passwords)
+# ---------------------------------------------------------------------------
+Users\Administrator\Documents\Default.rdg
+Users\Administrator\Documents\servers.rdg
+Users\admin\Documents\Default.rdg
+Users\admin\Documents\servers.rdg
+Users\Administrator\AppData\Local\Microsoft\Remote Desktop Connection Manager\RDCMan.settings
+
+# ---------------------------------------------------------------------------
+# NPM / YARN CREDENTIALS - per user
+# ---------------------------------------------------------------------------
+Users\Administrator\.npmrc
+Users\admin\.npmrc
+Users\user\.npmrc
+Users\deploy\.npmrc
+Users\jenkins\.npmrc
+Users\Administrator\.yarnrc.yml
+Users\admin\.yarnrc.yml
+Users\deploy\.yarnrc.yml
+
+# ---------------------------------------------------------------------------
+# PIP.INI - may contain index-url with embedded token
+# ---------------------------------------------------------------------------
+Users\Administrator\AppData\Roaming\pip\pip.ini
+Users\admin\AppData\Roaming\pip\pip.ini
+Users\user\AppData\Roaming\pip\pip.ini
+Users\deploy\AppData\Roaming\pip\pip.ini
+Users\jenkins\AppData\Roaming\pip\pip.ini
+
+# ---------------------------------------------------------------------------
+# VS CODE SETTINGS (extension tokens: Copilot, Azure, Remote SSH, etc.)
+# ---------------------------------------------------------------------------
+Users\Administrator\AppData\Roaming\Code\User\settings.json
+Users\admin\AppData\Roaming\Code\User\settings.json
+Users\user\AppData\Roaming\Code\User\settings.json
+Users\deploy\AppData\Roaming\Code\User\settings.json
+
+# ---------------------------------------------------------------------------
+# VAULT TOKENS - per user
+# ---------------------------------------------------------------------------
+Users\Administrator\.vault-token
+Users\admin\.vault-token
+Users\user\.vault-token
+Users\deploy\.vault-token
+Users\jenkins\.vault-token
+
+# ---------------------------------------------------------------------------
+# IIS SUBDIRECTORY WEB.CONFIG (per-application credential leakage)
+# ---------------------------------------------------------------------------
+inetpub\wwwroot\api\web.config
+inetpub\wwwroot\app\web.config
+inetpub\wwwroot\admin\web.config
+inetpub\wwwroot\v1\web.config
+inetpub\wwwroot\v2\web.config

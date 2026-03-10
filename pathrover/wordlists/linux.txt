@@ -1,0 +1,747 @@
+# PathROVER Linux Wordlist
+# High-value path traversal targets - no wildcards, no leading slash
+# Organized by category with sensitivity annotations
+
+# ---------------------------------------------------------------------------
+# SYSTEM CREDENTIALS
+# ---------------------------------------------------------------------------
+etc/passwd
+etc/shadow
+etc/shadow-
+etc/passwd-
+etc/group
+etc/gshadow
+etc/gshadow-
+etc/sudoers
+etc/sudoers.d/README
+etc/login.defs
+etc/pam.conf
+etc/security/passwd
+etc/security/opasswd
+etc/security/access.conf
+etc/security/limits.conf
+etc/nsswitch.conf
+
+# ---------------------------------------------------------------------------
+# NETWORK AND HOST CONFIG
+# ---------------------------------------------------------------------------
+etc/hosts
+etc/hostname
+etc/resolv.conf
+etc/environment
+etc/profile
+etc/bash.bashrc
+etc/fstab
+etc/mtab
+etc/exports
+etc/crontab
+etc/cron.d/root
+
+# ---------------------------------------------------------------------------
+# SSH - SYSTEM
+# ---------------------------------------------------------------------------
+etc/ssh/sshd_config
+etc/ssh/ssh_config
+etc/ssh/ssh_host_rsa_key
+etc/ssh/ssh_host_rsa_key.pub
+etc/ssh/ssh_host_ecdsa_key
+etc/ssh/ssh_host_ecdsa_key.pub
+etc/ssh/ssh_host_ed25519_key
+etc/ssh/ssh_host_ed25519_key.pub
+etc/ssh/ssh_host_dsa_key
+etc/ssh/ssh_host_dsa_key.pub
+
+# ---------------------------------------------------------------------------
+# SSL / TLS
+# ---------------------------------------------------------------------------
+etc/ssl/private/ssl-cert-snakeoil.key
+
+# ---------------------------------------------------------------------------
+# SSH - PER USER: root
+# ---------------------------------------------------------------------------
+root/.ssh/id_rsa
+root/.ssh/id_rsa.pub
+root/.ssh/id_ecdsa
+root/.ssh/id_ecdsa.pub
+root/.ssh/id_ed25519
+root/.ssh/id_ed25519.pub
+root/.ssh/authorized_keys
+root/.ssh/known_hosts
+root/.ssh/config
+
+# ---------------------------------------------------------------------------
+# SSH - PER USER: ubuntu
+# ---------------------------------------------------------------------------
+home/ubuntu/.ssh/id_rsa
+home/ubuntu/.ssh/id_ecdsa
+home/ubuntu/.ssh/id_ed25519
+home/ubuntu/.ssh/authorized_keys
+home/ubuntu/.ssh/known_hosts
+home/ubuntu/.ssh/config
+
+# ---------------------------------------------------------------------------
+# SSH - PER USER: debian
+# ---------------------------------------------------------------------------
+home/debian/.ssh/id_rsa
+home/debian/.ssh/id_ed25519
+home/debian/.ssh/authorized_keys
+home/debian/.ssh/known_hosts
+
+# ---------------------------------------------------------------------------
+# SSH - PER USER: kali
+# ---------------------------------------------------------------------------
+home/kali/.ssh/id_rsa
+home/kali/.ssh/id_ed25519
+home/kali/.ssh/authorized_keys
+home/kali/.ssh/known_hosts
+
+# ---------------------------------------------------------------------------
+# SSH - PER USER: admin
+# ---------------------------------------------------------------------------
+home/admin/.ssh/id_rsa
+home/admin/.ssh/id_ecdsa
+home/admin/.ssh/id_ed25519
+home/admin/.ssh/authorized_keys
+home/admin/.ssh/known_hosts
+home/admin/.ssh/config
+
+# ---------------------------------------------------------------------------
+# SSH - PER USER: deploy
+# ---------------------------------------------------------------------------
+home/deploy/.ssh/id_rsa
+home/deploy/.ssh/id_ed25519
+home/deploy/.ssh/authorized_keys
+home/deploy/.ssh/known_hosts
+
+# ---------------------------------------------------------------------------
+# SSH - PER USER: jenkins
+# ---------------------------------------------------------------------------
+home/jenkins/.ssh/id_rsa
+home/jenkins/.ssh/id_ed25519
+home/jenkins/.ssh/authorized_keys
+home/jenkins/.ssh/known_hosts
+
+# ---------------------------------------------------------------------------
+# SSH - PER USER: git / gitlab
+# ---------------------------------------------------------------------------
+home/git/.ssh/id_rsa
+home/git/.ssh/id_ed25519
+home/git/.ssh/authorized_keys
+home/git/.ssh/known_hosts
+home/gitlab/.ssh/id_rsa
+home/gitlab/.ssh/id_ed25519
+home/gitlab/.ssh/authorized_keys
+
+# ---------------------------------------------------------------------------
+# SSH - PER USER: ansible
+# ---------------------------------------------------------------------------
+home/ansible/.ssh/id_rsa
+home/ansible/.ssh/id_ed25519
+home/ansible/.ssh/authorized_keys
+
+# ---------------------------------------------------------------------------
+# WEB SERVER - APACHE
+# ---------------------------------------------------------------------------
+etc/apache2/apache2.conf
+etc/apache2/httpd.conf
+etc/apache2/ports.conf
+etc/apache2/envvars
+etc/apache2/sites-available/000-default.conf
+etc/apache2/sites-available/default-ssl.conf
+etc/apache2/sites-enabled/000-default.conf
+etc/apache2/conf-available/security.conf
+etc/apache2/.htpasswd
+etc/httpd/conf/httpd.conf
+etc/httpd/httpd.conf
+etc/httpd/conf.d/ssl.conf
+etc/httpd/conf.d/php.conf
+usr/local/apache2/conf/httpd.conf
+usr/local/apache2/conf/extra/httpd-ssl.conf
+usr/local/apache2/conf/extra/httpd-vhosts.conf
+var/log/apache2/access.log
+var/log/apache2/error.log
+var/log/apache2/other_vhosts_access.log
+var/log/httpd/access_log
+var/log/httpd/error_log
+
+# ---------------------------------------------------------------------------
+# WEB SERVER - NGINX
+# ---------------------------------------------------------------------------
+etc/nginx/nginx.conf
+etc/nginx/sites-available/default
+etc/nginx/sites-enabled/default
+etc/nginx/conf.d/default.conf
+etc/nginx/fastcgi.conf
+etc/nginx/fastcgi_params
+usr/local/nginx/conf/nginx.conf
+var/log/nginx/access.log
+var/log/nginx/error.log
+
+# ---------------------------------------------------------------------------
+# PHP - VERSION SPECIFIC
+# ---------------------------------------------------------------------------
+etc/php/7.4/apache2/php.ini
+etc/php/7.4/cli/php.ini
+etc/php/7.4/fpm/php.ini
+etc/php/7.4/fpm/pool.d/www.conf
+etc/php/8.0/apache2/php.ini
+etc/php/8.0/cli/php.ini
+etc/php/8.0/fpm/php.ini
+etc/php/8.0/fpm/pool.d/www.conf
+etc/php/8.1/apache2/php.ini
+etc/php/8.1/cli/php.ini
+etc/php/8.1/fpm/php.ini
+etc/php/8.1/fpm/pool.d/www.conf
+etc/php/8.2/apache2/php.ini
+etc/php/8.2/cli/php.ini
+etc/php/8.2/fpm/php.ini
+etc/php/8.2/fpm/pool.d/www.conf
+etc/php/8.3/apache2/php.ini
+etc/php/8.3/cli/php.ini
+etc/php/8.3/fpm/php.ini
+etc/php/8.3/fpm/pool.d/www.conf
+etc/php/8.4/apache2/php.ini
+etc/php/8.4/cli/php.ini
+etc/php/8.4/fpm/php.ini
+etc/php/8.4/fpm/pool.d/www.conf
+etc/php.ini
+usr/local/lib/php.ini
+usr/local/etc/php.ini
+
+# ---------------------------------------------------------------------------
+# DATABASE - MYSQL
+# ---------------------------------------------------------------------------
+etc/mysql/my.cnf
+etc/mysql/mysql.conf.d/mysqld.cnf
+etc/mysql/conf.d/mysql.cnf
+etc/my.cnf
+root/.my.cnf
+home/ubuntu/.my.cnf
+home/admin/.my.cnf
+home/deploy/.my.cnf
+var/log/mysql/error.log
+var/log/mysql/mysql.log
+var/log/mysql/mysql-slow.log
+var/log/mysqld.log
+
+# ---------------------------------------------------------------------------
+# DATABASE - POSTGRESQL (versions 12-16)
+# ---------------------------------------------------------------------------
+etc/postgresql/12/main/postgresql.conf
+etc/postgresql/12/main/pg_hba.conf
+etc/postgresql/12/main/pg_ident.conf
+etc/postgresql/13/main/postgresql.conf
+etc/postgresql/13/main/pg_hba.conf
+etc/postgresql/13/main/pg_ident.conf
+etc/postgresql/14/main/postgresql.conf
+etc/postgresql/14/main/pg_hba.conf
+etc/postgresql/14/main/pg_ident.conf
+etc/postgresql/15/main/postgresql.conf
+etc/postgresql/15/main/pg_hba.conf
+etc/postgresql/15/main/pg_ident.conf
+etc/postgresql/16/main/postgresql.conf
+etc/postgresql/16/main/pg_hba.conf
+etc/postgresql/16/main/pg_ident.conf
+var/log/postgresql/postgresql-12-main.log
+var/log/postgresql/postgresql-13-main.log
+var/log/postgresql/postgresql-14-main.log
+var/log/postgresql/postgresql-15-main.log
+var/log/postgresql/postgresql-16-main.log
+
+# ---------------------------------------------------------------------------
+# DATABASE - REDIS
+# ---------------------------------------------------------------------------
+etc/redis/redis.conf
+etc/redis.conf
+var/log/redis/redis-server.log
+var/log/redis.log
+
+# ---------------------------------------------------------------------------
+# DATABASE - PHPMYADMIN
+# ---------------------------------------------------------------------------
+etc/phpmyadmin/config.inc.php
+etc/phpmyadmin/config-db.php
+usr/share/phpmyadmin/config.inc.php
+
+# ---------------------------------------------------------------------------
+# WEB APP SECRETS
+# ---------------------------------------------------------------------------
+var/www/html/.env
+var/www/html/.env.local
+var/www/html/.env.production
+var/www/html/config.php
+var/www/html/wp-config.php
+var/www/html/configuration.php
+var/www/html/config/database.php
+var/www/html/settings.py
+var/www/html/local_settings.py
+var/www/html/appsettings.json
+var/www/html/web.config
+var/www/.env
+
+# ---------------------------------------------------------------------------
+# LOG FILES
+# ---------------------------------------------------------------------------
+var/log/syslog
+var/log/auth.log
+var/log/secure
+var/log/messages
+var/log/kern.log
+var/log/dmesg
+var/log/boot.log
+var/log/faillog
+var/log/cloud-init.log
+var/log/cloud-init-output.log
+var/log/dpkg.log
+var/log/apt/history.log
+var/log/cron.log
+var/log/ufw.log
+var/log/mysql/error.log
+var/log/mysql/mysql-slow.log
+var/log/postgresql/postgresql.log
+
+# ---------------------------------------------------------------------------
+# SHELL HISTORY - root
+# ---------------------------------------------------------------------------
+root/.bash_history
+root/.zsh_history
+root/.sh_history
+root/.mysql_history
+root/.psql_history
+root/.python_history
+
+# ---------------------------------------------------------------------------
+# SHELL HISTORY - per user
+# ---------------------------------------------------------------------------
+home/ubuntu/.bash_history
+home/ubuntu/.zsh_history
+home/ubuntu/.mysql_history
+home/ubuntu/.psql_history
+home/debian/.bash_history
+home/debian/.zsh_history
+home/kali/.bash_history
+home/kali/.zsh_history
+home/admin/.bash_history
+home/admin/.zsh_history
+home/admin/.mysql_history
+home/deploy/.bash_history
+home/deploy/.zsh_history
+home/jenkins/.bash_history
+home/git/.bash_history
+home/git/.zsh_history
+home/gitlab/.bash_history
+home/ansible/.bash_history
+home/postgres/.bash_history
+home/postgres/.psql_history
+
+# ---------------------------------------------------------------------------
+# SHELL RC / PROFILE FILES (may contain exported secrets)
+# ---------------------------------------------------------------------------
+root/.bashrc
+root/.bash_profile
+root/.profile
+root/.zshrc
+home/ubuntu/.bashrc
+home/ubuntu/.profile
+home/ubuntu/.zshrc
+home/admin/.bashrc
+home/admin/.zshrc
+home/deploy/.bashrc
+home/deploy/.zshrc
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - AWS (per user)
+# ---------------------------------------------------------------------------
+root/.aws/credentials
+root/.aws/config
+home/ubuntu/.aws/credentials
+home/ubuntu/.aws/config
+home/admin/.aws/credentials
+home/admin/.aws/config
+home/deploy/.aws/credentials
+home/deploy/.aws/config
+home/jenkins/.aws/credentials
+home/jenkins/.aws/config
+home/gitlab/.aws/credentials
+home/ansible/.aws/credentials
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - GCP
+# ---------------------------------------------------------------------------
+root/.config/gcloud/credentials.db
+root/.config/gcloud/application_default_credentials.json
+home/ubuntu/.config/gcloud/credentials.db
+home/ubuntu/.config/gcloud/application_default_credentials.json
+home/admin/.config/gcloud/credentials.db
+home/deploy/.config/gcloud/credentials.db
+home/jenkins/.config/gcloud/credentials.db
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - AZURE
+# ---------------------------------------------------------------------------
+root/.azure/accessTokens.json
+root/.azure/azureProfile.json
+home/ubuntu/.azure/accessTokens.json
+home/admin/.azure/accessTokens.json
+home/deploy/.azure/accessTokens.json
+home/jenkins/.azure/accessTokens.json
+
+# ---------------------------------------------------------------------------
+# CLOUD CREDENTIALS - KUBERNETES
+# ---------------------------------------------------------------------------
+root/.kube/config
+home/ubuntu/.kube/config
+home/admin/.kube/config
+home/deploy/.kube/config
+home/jenkins/.kube/config
+home/gitlab/.kube/config
+home/ansible/.kube/config
+var/run/secrets/kubernetes.io/serviceaccount/token
+var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+etc/kubernetes/admin.conf
+etc/kubernetes/scheduler.conf
+etc/kubernetes/controller-manager.conf
+etc/kubernetes/pki/ca.key
+etc/kubernetes/pki/sa.key
+
+# ---------------------------------------------------------------------------
+# DOCKER
+# ---------------------------------------------------------------------------
+etc/docker/daemon.json
+etc/containerd/config.toml
+root/.docker/config.json
+home/ubuntu/.docker/config.json
+home/admin/.docker/config.json
+home/deploy/.docker/config.json
+home/jenkins/.docker/config.json
+
+# ---------------------------------------------------------------------------
+# DEV TOOL CREDENTIALS
+# ---------------------------------------------------------------------------
+root/.gitconfig
+root/.netrc
+root/.npmrc
+root/.pypirc
+root/.vault-token
+root/.terraform.d/credentials.tfrc.json
+home/ubuntu/.gitconfig
+home/ubuntu/.netrc
+home/admin/.gitconfig
+home/admin/.npmrc
+home/admin/.pypirc
+home/deploy/.gitconfig
+home/deploy/.npmrc
+home/jenkins/.gitconfig
+
+# ---------------------------------------------------------------------------
+# ENV FILES (per user)
+# ---------------------------------------------------------------------------
+home/ubuntu/.env
+home/ubuntu/.env.production
+home/ubuntu/.env.local
+home/admin/.env
+home/deploy/.env
+home/deploy/.env.production
+
+# ---------------------------------------------------------------------------
+# CI/CD - JENKINS
+# ---------------------------------------------------------------------------
+var/lib/jenkins/config.xml
+var/lib/jenkins/credentials.xml
+var/lib/jenkins/users/admin/config.xml
+var/lib/jenkins/secrets/master.key
+var/lib/jenkins/secrets/hudson.util.Secret
+home/jenkins/.bash_history
+home/jenkins/.ssh/id_rsa
+
+# ---------------------------------------------------------------------------
+# CI/CD - GITLAB
+# ---------------------------------------------------------------------------
+etc/gitlab/gitlab.rb
+etc/gitlab/gitlab-secrets.json
+var/opt/gitlab/gitlab-rails/etc/database.yml
+var/opt/gitlab/gitlab-rails/etc/secrets.yml
+home/git/.ssh/id_rsa
+
+# ---------------------------------------------------------------------------
+# CI/CD - ANSIBLE
+# ---------------------------------------------------------------------------
+etc/ansible/ansible.cfg
+home/ansible/.ansible_vault_pass
+home/ansible/ansible.cfg
+root/.ansible_vault_pass
+
+# ---------------------------------------------------------------------------
+# /proc FILESYSTEM
+# ---------------------------------------------------------------------------
+proc/self/environ
+proc/self/cmdline
+proc/self/status
+proc/self/maps
+proc/self/mounts
+proc/self/cgroup
+proc/self/net/arp
+proc/self/net/tcp
+proc/self/net/udp
+proc/self/fd/0
+proc/self/fd/1
+proc/self/fd/2
+proc/self/fd/3
+proc/self/fd/4
+proc/self/fd/5
+proc/self/fd/6
+proc/self/fd/7
+proc/self/fd/8
+proc/self/fd/9
+proc/1/cmdline
+proc/1/environ
+proc/1/cgroup
+proc/version
+proc/cpuinfo
+proc/net/arp
+proc/net/tcp
+proc/net/route
+proc/config.gz
+proc/mounts
+
+# ---------------------------------------------------------------------------
+# TOMCAT
+# ---------------------------------------------------------------------------
+usr/local/tomcat/conf/tomcat-users.xml
+usr/local/tomcat/conf/server.xml
+opt/tomcat/conf/tomcat-users.xml
+opt/tomcat/conf/server.xml
+
+# ---------------------------------------------------------------------------
+# SAMBA
+# ---------------------------------------------------------------------------
+etc/samba/smb.conf
+
+# ---------------------------------------------------------------------------
+# BOOT / GRUB
+# ---------------------------------------------------------------------------
+boot/grub/grub.cfg
+boot/grub2/grub.cfg
+boot/grub/grub.conf
+
+# ---------------------------------------------------------------------------
+# SCHEDULED TASKS / CRON (per-user crontabs)
+# ---------------------------------------------------------------------------
+var/spool/cron/crontabs/root
+var/spool/cron/crontabs/ubuntu
+var/spool/cron/crontabs/admin
+var/spool/cron/crontabs/deploy
+var/spool/cron/crontabs/jenkins
+var/spool/cron/crontabs/www-data
+var/spool/cron/root
+var/spool/cron/ubuntu
+var/spool/cron/admin
+
+# ---------------------------------------------------------------------------
+# SSH / HISTORY / ENV - www-data user
+# ---------------------------------------------------------------------------
+var/www/.ssh/id_rsa
+var/www/.ssh/id_ed25519
+var/www/.ssh/authorized_keys
+var/www/.bash_history
+var/www/.env
+home/www-data/.ssh/id_rsa
+home/www-data/.ssh/id_ed25519
+home/www-data/.ssh/authorized_keys
+home/www-data/.bash_history
+home/www-data/.env
+
+# ---------------------------------------------------------------------------
+# SSH / HISTORY / ENV - svc user (common service account name)
+# ---------------------------------------------------------------------------
+home/svc/.ssh/id_rsa
+home/svc/.ssh/id_ed25519
+home/svc/.ssh/authorized_keys
+home/svc/.bash_history
+home/svc/.env
+home/svc/.aws/credentials
+
+# ---------------------------------------------------------------------------
+# SSH / HISTORY / ENV - tomcat user
+# ---------------------------------------------------------------------------
+home/tomcat/.ssh/id_rsa
+home/tomcat/.ssh/id_ed25519
+home/tomcat/.ssh/authorized_keys
+home/tomcat/.bash_history
+home/tomcat/.env
+
+# ---------------------------------------------------------------------------
+# SSH / HISTORY / ENV - postgres user
+# ---------------------------------------------------------------------------
+home/postgres/.ssh/id_rsa
+home/postgres/.ssh/id_ed25519
+home/postgres/.ssh/authorized_keys
+home/postgres/.env
+home/postgres/.aws/credentials
+
+# ---------------------------------------------------------------------------
+# SSH / HISTORY / ENV - node / app / webapp user
+# ---------------------------------------------------------------------------
+home/node/.ssh/id_rsa
+home/node/.bash_history
+home/node/.env
+home/app/.ssh/id_rsa
+home/app/.bash_history
+home/app/.env
+home/webapp/.ssh/id_rsa
+home/webapp/.bash_history
+home/webapp/.env
+home/webapp/.aws/credentials
+
+# ---------------------------------------------------------------------------
+# RUBY ON RAILS CONFIG FILES
+# ---------------------------------------------------------------------------
+config/database.yml
+config/secrets.yml
+config/credentials.yml.enc
+config/master.key
+config/application.yml
+config/initializers/secret_token.rb
+
+# ---------------------------------------------------------------------------
+# PYTHON / DJANGO APP CONFIGS
+# ---------------------------------------------------------------------------
+app/settings.py
+app/local_settings.py
+project/settings.py
+project/local_settings.py
+src/settings.py
+srv/app/.env
+srv/www/.env
+opt/app/.env
+opt/app/config.py
+opt/app/settings.py
+
+# ---------------------------------------------------------------------------
+# NODE.JS APP CONFIGS
+# ---------------------------------------------------------------------------
+opt/app/config.json
+opt/app/.env
+srv/app/config.json
+
+# ---------------------------------------------------------------------------
+# MAVEN / JAVA
+# ---------------------------------------------------------------------------
+root/.m2/settings.xml
+home/ubuntu/.m2/settings.xml
+home/admin/.m2/settings.xml
+home/deploy/.m2/settings.xml
+home/jenkins/.m2/settings.xml
+
+# ---------------------------------------------------------------------------
+# RUBYGEMS CREDENTIALS
+# ---------------------------------------------------------------------------
+root/.gem/credentials
+home/ubuntu/.gem/credentials
+home/admin/.gem/credentials
+home/deploy/.gem/credentials
+home/developer/.gem/credentials
+
+# ---------------------------------------------------------------------------
+# GITHUB CLI TOKEN
+# ---------------------------------------------------------------------------
+root/.config/gh/hosts.yml
+home/ubuntu/.config/gh/hosts.yml
+home/admin/.config/gh/hosts.yml
+home/deploy/.config/gh/hosts.yml
+home/developer/.config/gh/hosts.yml
+home/jenkins/.config/gh/hosts.yml
+
+# ---------------------------------------------------------------------------
+# NETWORK / FIREWALL CONFIGS
+# ---------------------------------------------------------------------------
+etc/iptables/rules.v4
+etc/iptables/rules.v6
+etc/nftables.conf
+etc/ufw/ufw.conf
+etc/wireguard/wg0.conf
+etc/openvpn/server.conf
+etc/openvpn/client.conf
+
+# ---------------------------------------------------------------------------
+# GIT CREDENTIAL STORE (plaintext https://user:token@host)
+# ---------------------------------------------------------------------------
+root/.git-credentials
+home/ubuntu/.git-credentials
+home/admin/.git-credentials
+home/deploy/.git-credentials
+home/jenkins/.git-credentials
+home/git/.git-credentials
+home/gitlab/.git-credentials
+home/developer/.git-credentials
+
+# ---------------------------------------------------------------------------
+# VAULT TOKENS - per user (root/.vault-token already in dev tool credentials)
+# ---------------------------------------------------------------------------
+home/ubuntu/.vault-token
+home/admin/.vault-token
+home/deploy/.vault-token
+home/jenkins/.vault-token
+home/git/.vault-token
+home/gitlab/.vault-token
+home/ansible/.vault-token
+
+# ---------------------------------------------------------------------------
+# SSH / HISTORY / ENV / CLOUD - vagrant (dev/staging environments)
+# ---------------------------------------------------------------------------
+home/vagrant/.ssh/id_rsa
+home/vagrant/.ssh/id_ed25519
+home/vagrant/.ssh/authorized_keys
+home/vagrant/.bash_history
+home/vagrant/.env
+home/vagrant/.aws/credentials
+
+# ---------------------------------------------------------------------------
+# SSH / HISTORY / ENV / CLOUD - ec2-user (Amazon Linux default user)
+# ---------------------------------------------------------------------------
+home/ec2-user/.ssh/id_rsa
+home/ec2-user/.ssh/authorized_keys
+home/ec2-user/.bash_history
+home/ec2-user/.aws/credentials
+home/ec2-user/.aws/config
+
+# ---------------------------------------------------------------------------
+# SSH / HISTORY / ENV / CLOUD - centos (CentOS/RHEL cloud default user)
+# ---------------------------------------------------------------------------
+home/centos/.ssh/id_rsa
+home/centos/.ssh/authorized_keys
+home/centos/.bash_history
+home/centos/.aws/credentials
+
+# ---------------------------------------------------------------------------
+# POSTFIX SMTP RELAY CREDENTIALS
+# ---------------------------------------------------------------------------
+etc/postfix/sasl_passwd
+etc/postfix/sasl_passwd.db
+etc/postfix/main.cf
+
+# ---------------------------------------------------------------------------
+# YARN BERRY CREDENTIALS (.yarnrc.yml contains npmAuthToken in plaintext)
+# ---------------------------------------------------------------------------
+root/.yarnrc.yml
+home/ubuntu/.yarnrc.yml
+home/admin/.yarnrc.yml
+home/deploy/.yarnrc.yml
+home/jenkins/.yarnrc.yml
+
+# ---------------------------------------------------------------------------
+# SYSTEMD / SUPERVISOR SERVICE FILES (may contain Environment=SECRET=value)
+# ---------------------------------------------------------------------------
+etc/systemd/system/app.service
+etc/systemd/system/webapp.service
+etc/systemd/system/api.service
+lib/systemd/system/app.service
+etc/supervisor/conf.d/app.conf
+etc/supervisor/supervisord.conf
+
+# ---------------------------------------------------------------------------
+# CLOUD-INIT USER DATA (bootstrap scripts — often contain exported secrets)
+# ---------------------------------------------------------------------------
+var/lib/cloud/instance/user-data.txt
+var/lib/cloud/instance/cloud-config.txt
+var/lib/cloud/instances/user-data.txt
