@@ -11,7 +11,9 @@ been removed so that files confirmed via heuristics still get extraction.
 from __future__ import annotations
 
 import base64
+import json
 import re
+import shlex
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -36,13 +38,17 @@ _RE_UNIX_PASSWD_LINE = re.compile(
     r"^([^:\n]+):([^:\n]*):(\d+):(\d+):([^:\n]*):([^:\n]*):([^\n]*)$", re.MULTILINE
 )
 _RE_SHADOW_HASH = re.compile(
-    r"^([^:]+):(\$(?:[1-6]|y|gy|sha512|md5)\$[^\s:]+):", re.MULTILINE
+    r"^([^:]+):(\$(?:1|2[aby]?|5|6|7|y|gy|sha512|md5)\$[^\s:]+):", re.MULTILINE
 )
 _RE_PEM_BLOCK = re.compile(
     r"(-----BEGIN [A-Z ]+-----[\s\S]+?-----END [A-Z ]+-----)", re.MULTILINE
 )
 _RE_AWS_KEY_ID = re.compile(r"aws_access_key_id\s*[=:]\s*([A-Z0-9]{16,32})", re.IGNORECASE)
 _RE_AWS_SECRET = re.compile(r"aws_secret_access_key\s*[=:]\s*([A-Za-z0-9+/=]{30,60})", re.IGNORECASE)
+_RE_AWS_SESSION_TOKEN = re.compile(
+    r'(?:aws_session_token|sessiontoken|x-amz-security-token)\s*[=:]\s*["\']?([A-Za-z0-9+/=]{16,})',
+    re.IGNORECASE,
+)
 _RE_DATABASE_URL = re.compile(
     r"(?:DATABASE_URL|DB_URL|CONNECTION_STRING|DB_HOST)\s*[=:]\s*['\"]?([^\s'\"]{8,})", re.IGNORECASE
 )
@@ -51,8 +57,10 @@ _RE_CONNECTION_STRING_XML = re.compile(
 )
 # Generic secret variable patterns — KEY=value / KEY: value (YAML/config too)
 # Matches both UPPER_CASE and lower_case / mixed_case secret variable names.
+# Intentionally narrower than a generic "auth/private" match to reduce false
+# positives from benign config like AUTH_TYPE, PRIVATE_DIR, TOKEN_URL, etc.
 _RE_ENV_SECRET = re.compile(
-    r'^([A-Za-z_][A-Za-z0-9_]*(?:key|token|secret|password|passwd|api_?key|private|credential|auth)[A-Za-z0-9_]*)\s*[=:]\s*(.{4,})$',
+    r'^[ \t]*([A-Za-z_][A-Za-z0-9_]*(?:password|passwd|passphrase|secret(?:_key)?|api_?key|access_?key|private_?key|token|auth_?token|client_?secret|refresh_?token|db_?pass(?:word)?)[A-Za-z0-9_]*)\s*[=:]\s*(.{4,})$',
     re.IGNORECASE | re.MULTILINE,
 )
 # Broader env var capture (for /proc/self/environ and .env)
@@ -200,6 +208,14 @@ _RE_GH_CLI_TOKEN = re.compile(
     r"oauth_token:\s*([A-Za-z0-9_\-]{10,})",
     re.IGNORECASE,
 )
+_RE_GITHUB_TOKEN = re.compile(
+    r"\b(?:ghp|gho|ghu|ghs)_[A-Za-z0-9]{20,255}\b|\bgithub_pat_[A-Za-z0-9_]{20,255}\b"
+)
+_RE_SLACK_TOKEN = re.compile(r"\bxox(?:a|b|p|r|s)-[A-Za-z0-9-]{10,}\b")
+_RE_SLACK_WEBHOOK = re.compile(r"https://hooks\.slack\.com/services/[A-Za-z0-9/_-]+")
+_RE_STRIPE_LIVE_KEY = re.compile(r"\b(?:sk|rk)_live_[A-Za-z0-9]{16,}\b")
+_RE_SENDGRID_TOKEN = re.compile(r"\bSG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}\b")
+_RE_GITLAB_PAT = re.compile(r"\bglpat-[A-Za-z0-9_-]{20,}\b")
 
 # Rails config/master.key — 32-char hex string, one per line
 # (Jenkins master.key is 64-char; this is explicitly 32-char to avoid collision)
@@ -217,6 +233,14 @@ _RE_MSAL_TOKEN = re.compile(
 _RE_TOML_TOKEN = re.compile(
     r'^[ \t]*(token|registration_token|url)\s*=\s*"([^"]{8,})"',
     re.IGNORECASE | re.MULTILINE,
+)
+_RE_GITLAB_RB_SECRET = re.compile(
+    r"gitlab_rails\[['\"]([^'\"]*(?:password|secret|token|key)[^'\"]*)['\"]\]\s*=\s*['\"]([^'\"\n]{6,})['\"]",
+    re.IGNORECASE,
+)
+_RE_GITLAB_JSON_SECRET = re.compile(
+    r'"([^"\n]*(?:password|secret|token|key)[^"\n]*)"\s*:\s*"([^"\n]{6,})"',
+    re.IGNORECASE,
 )
 
 # WinSCP INI — XOR-obfuscated Password= / ProxyPassword= hex blobs
@@ -332,6 +356,186 @@ _RE_PHP_DEFINE = re.compile(
     r"\s*,\s*['\"]([^'\"]{4,})['\"]",
     re.IGNORECASE,
 )
+_RE_WINDOWS_LOG_CREDENTIAL_INDICATOR = re.compile(
+    r"^.*(?:lpPassword\s*:\s*\((?:non-null|set)\)|"
+    r"lpMachinePassword\s*:\s*\((?:non-null|set)\)|"
+    r"unicodePwd\s*=\s*.+|"
+    r"(?:admin|service|domain)?\s*password\s*[:=]\s*<[^>]+>|"
+    r"password\s*[:=]\s*\(non-null\)).*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
+_ENV_SECRET_SKIP_SUFFIXES = (
+    "_type",
+    "_types",
+    "_dir",
+    "_path",
+    "_paths",
+    "_url",
+    "_uri",
+    "_host",
+    "_hosts",
+    "_port",
+    "_policy",
+    "_file",
+    "_files",
+    "_name",
+    "_prefix",
+    "_method",
+    "_provider",
+)
+_ENV_SECRET_SKIP_VALUES = {
+    "",
+    "''",
+    '""',
+    "true",
+    "false",
+    "none",
+    "null",
+    "changeme",
+    "password",
+    "secret",
+    "xxx",
+    "oauth",
+    "bearer",
+    "basic",
+}
+
+
+def _looks_secret_like(name: str, value: str) -> bool:
+    name_l = name.lower()
+    value_s = value.strip().strip("'\"")
+    value_l = value_s.lower()
+
+    if not value_s or value_l in _ENV_SECRET_SKIP_VALUES:
+        return False
+    if any(name_l.endswith(suffix) for suffix in _ENV_SECRET_SKIP_SUFFIXES):
+        return False
+    if value_s.startswith(("/", "./", "../", "http://", "https://")):
+        return False
+    if re.fullmatch(r"[A-Za-z0-9_.-]{1,32}", value_s) and value_l in {
+        "oauth2", "oauth", "jwt", "token", "secret", "enabled", "disabled",
+    }:
+        return False
+    return len(value_s) >= 6
+
+
+def _append_shell_history(findings: list[ExtractedFinding], path: str, lines: list[str], source: str, limit: int) -> None:
+    for line in lines[:limit]:
+        findings.append(ExtractedFinding(
+            type="history_sensitive_command",
+            value=line.strip(),
+            source_path=path,
+            note=f"{source} history line referencing credentials/tokens; review manually",
+        ))
+
+
+def _iter_xml_root(body: str) -> ET.Element | None:
+    try:
+        return ET.fromstring(body)
+    except ET.ParseError:
+        return None
+
+
+def _looks_like_shell_history_body(body: str) -> bool:
+    command_like = re.findall(
+        r"^(?:sudo|ssh|curl|wget|git|docker|kubectl|mysql|psql|python|pip|apt|yum|systemctl|export|cd\s+/|az|aws|gcloud)\b",
+        body,
+        re.IGNORECASE | re.MULTILINE,
+    )
+    return len(command_like) >= 2
+
+
+def _xml_child_text(elem: ET.Element, child_name: str) -> str:
+    child = elem.find(child_name)
+    if child is None or child.text is None:
+        return ""
+    return child.text.strip()
+
+
+def _parse_netrc_entries(body: str) -> list[tuple[str, str, str]]:
+    tokens: list[str] = []
+    for raw_line in body.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        try:
+            tokens.extend(shlex.split(line, comments=True, posix=True))
+        except ValueError:
+            tokens.extend(line.split())
+
+    entries: list[tuple[str, str, str]] = []
+    current: dict[str, str] = {}
+    i = 0
+    while i < len(tokens):
+        token = tokens[i].lower()
+
+        if token == "machine":
+            if current.get("machine") and current.get("password"):
+                entries.append((current["machine"], current.get("login", "?"), current["password"]))
+            machine = tokens[i + 1] if i + 1 < len(tokens) else "?"
+            current = {"machine": machine}
+            i += 2
+            continue
+
+        if token == "default":
+            if current.get("machine") and current.get("password"):
+                entries.append((current["machine"], current.get("login", "?"), current["password"]))
+            current = {"machine": "default"}
+            i += 1
+            continue
+
+        if token in {"login", "password", "account"} and i + 1 < len(tokens):
+            current[token] = tokens[i + 1]
+            i += 2
+            continue
+
+        i += 1
+
+    if current.get("machine") and current.get("password"):
+        entries.append((current["machine"], current.get("login", "?"), current["password"]))
+
+    return entries
+
+
+def _finding_contains_value(finding: ExtractedFinding, secret_value: str) -> bool:
+    if finding.value == secret_value:
+        return True
+    markers = (
+        f"={secret_value}",
+        f":{secret_value}",
+        f"password={secret_value}",
+        f"token={secret_value}",
+        f"secret={secret_value}",
+        f" {secret_value}@",
+    )
+    return any(marker in finding.value for marker in markers)
+
+
+def _prune_overlapping_findings(findings: list[ExtractedFinding]) -> list[ExtractedFinding]:
+    deduped = _dedupe(findings)
+    generic_types = {"secret_variable", "config_password", "jwt_token"}
+    indicator_types = {"history_sensitive_command", "windows_log_credential_indicator"}
+    specific = [f for f in deduped if f.type not in generic_types]
+    kubernetes_tokens = {f.value for f in deduped if f.type == "kubernetes_sa_token"}
+
+    pruned: list[ExtractedFinding] = []
+    for finding in deduped:
+        if finding.type == "jwt_token" and finding.value in kubernetes_tokens:
+            continue
+        if finding.type in indicator_types:
+            pruned.append(finding)
+            continue
+        if finding.type == "secret_variable":
+            secret_value = finding.value.split("=", 1)[1] if "=" in finding.value else finding.value
+            if any(_finding_contains_value(other, secret_value) for other in specific if other.source_path == finding.source_path):
+                continue
+        if finding.type == "config_password":
+            if any(_finding_contains_value(other, finding.value) for other in specific if other.source_path == finding.source_path):
+                continue
+        pruned.append(finding)
+    return pruned
 
 
 # ---------------------------------------------------------------------------
@@ -471,6 +675,12 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
             value=m.group(1),
             source_path=path,
         ))
+    for m in _RE_AWS_SESSION_TOKEN.finditer(body):
+        findings.append(ExtractedFinding(
+            type="aws_session_token",
+            value=m.group(1),
+            source_path=path,
+        ))
 
     # JWT tokens
     for m in _RE_JWT.finditer(body):
@@ -495,6 +705,44 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
         findings.append(ExtractedFinding(
             type="vault_token",
             value=m.group(1),
+            source_path=path,
+        ))
+
+    # Common SaaS/API token formats
+    for token in dict.fromkeys(_RE_GITHUB_TOKEN.findall(body)):
+        findings.append(ExtractedFinding(
+            type="github_token",
+            value=token,
+            source_path=path,
+        ))
+    for token in dict.fromkeys(_RE_GITLAB_PAT.findall(body)):
+        findings.append(ExtractedFinding(
+            type="gitlab_pat",
+            value=token,
+            source_path=path,
+        ))
+    for token in dict.fromkeys(_RE_SLACK_TOKEN.findall(body)):
+        findings.append(ExtractedFinding(
+            type="slack_token",
+            value=token,
+            source_path=path,
+        ))
+    for token in dict.fromkeys(_RE_SLACK_WEBHOOK.findall(body)):
+        findings.append(ExtractedFinding(
+            type="slack_webhook",
+            value=token,
+            source_path=path,
+        ))
+    for token in dict.fromkeys(_RE_STRIPE_LIVE_KEY.findall(body)):
+        findings.append(ExtractedFinding(
+            type="stripe_live_key",
+            value=token,
+            source_path=path,
+        ))
+    for token in dict.fromkeys(_RE_SENDGRID_TOKEN.findall(body)):
+        findings.append(ExtractedFinding(
+            type="sendgrid_token",
+            value=token,
             source_path=path,
         ))
 
@@ -524,7 +772,7 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
     # Generic secret variable patterns (KEY=value / KEY: value)
     for m in _RE_ENV_SECRET.finditer(body):
         val = m.group(2).strip().strip("'\"")
-        if len(val) >= 4:
+        if _looks_secret_like(m.group(1), val):
             findings.append(ExtractedFinding(
                 type="secret_variable",
                 value=f"{m.group(1)}={val}",
@@ -605,48 +853,32 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
     )
     if is_ps_history:
         ps_notable = _RE_PS_NOTABLE.findall(body)
-        for line in ps_notable[:30]:
-            findings.append(ExtractedFinding(
-                type="powershell_history_notable",
-                value=line.strip(),
-                source_path=path,
-                note="PowerShell history — sensitive command",
-            ))
+        _append_shell_history(findings, path, ps_notable, "PowerShell", 30)
     else:
         # Still extract if body looks like PS history (multiple PS-style lines)
         ps_notable = _RE_PS_NOTABLE.findall(body)
         if len(ps_notable) >= 2:
-            for line in ps_notable[:15]:
-                findings.append(ExtractedFinding(
-                    type="powershell_history_notable",
-                    value=line.strip(),
-                    source_path=path,
-                    note="PowerShell history — sensitive command",
-                ))
+            _append_shell_history(findings, path, ps_notable, "PowerShell", 15)
 
     # .netrc credentials
     if "netrc" in filename or "netrc" in path_lower or (
         "machine " in body.lower() and "password " in body.lower()
     ):
-        # Try single-line format first
-        for m in _RE_NETRC_ENTRY.finditer(body):
-            findings.append(ExtractedFinding(
-                type="netrc_credential",
-                value=f"machine={m.group(1)} login={m.group(2)} password={m.group(3)}",
-                source_path=path,
-                note=".netrc cleartext credential",
-            ))
-        # Multi-line format: pair up machines with logins and passwords
-        if not _RE_NETRC_ENTRY.search(body):
-            machines = _RE_NETRC_MACHINE.findall(body)
-            logins   = _RE_NETRC_LOGIN.findall(body)
-            passwords = _RE_NETRC_PASS.findall(body)
-            for i, machine in enumerate(machines):
-                login = logins[i] if i < len(logins) else "?"
-                pw    = passwords[i] if i < len(passwords) else "?"
+        parsed_netrc = _parse_netrc_entries(body)
+        if parsed_netrc:
+            for machine, login, password in parsed_netrc:
                 findings.append(ExtractedFinding(
                     type="netrc_credential",
-                    value=f"machine={machine} login={login} password={pw}",
+                    value=f"machine={machine} login={login} password={password}",
+                    source_path=path,
+                    note=".netrc cleartext credential",
+                ))
+        else:
+            # Fallback regex for unusual single-line formats
+            for m in _RE_NETRC_ENTRY.finditer(body):
+                findings.append(ExtractedFinding(
+                    type="netrc_credential",
+                    value=f"machine={m.group(1)} login={m.group(2)} password={m.group(3)}",
                     source_path=path,
                     note=".netrc cleartext credential",
                 ))
@@ -677,30 +909,57 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
                 ),
             ))
 
+    # Tomcat users
+    if "tomcat-users.xml" in path_lower or "<tomcat-users" in body.lower():
+        root = _iter_xml_root(body)
+        if root is not None:
+            for user in root.findall(".//user"):
+                username = user.attrib.get("username") or user.attrib.get("name")
+                password = user.attrib.get("password")
+                roles = user.attrib.get("roles", "")
+                if username and password:
+                    findings.append(ExtractedFinding(
+                        type="tomcat_user_credential",
+                        value=f"{username}:{password}",
+                        source_path=path,
+                        note=f"Tomcat manager credential{' (roles: ' + roles + ')' if roles else ''}",
+                    ))
+
     # Maven settings.xml
-    if "settings" in filename and (".xml" in filename or ".xml" in path_lower):
-        for m in _RE_MAVEN_PASSWORD.finditer(body):
-            val = m.group(1).strip()
-            if val:
-                # Try to find a nearby username for context
-                user_m = _RE_MAVEN_USERNAME.search(body)
-                user_hint = user_m.group(1).strip() if user_m else ""
-                findings.append(ExtractedFinding(
-                    type="maven_server_password",
-                    value=val,
-                    source_path=path,
-                    note=f"Maven settings.xml server password{' (user: ' + user_hint + ')' if user_hint else ''}",
-                ))
-    elif "settings.xml" in path_lower or ("maven" in path_lower and ".xml" in path_lower):
-        for m in _RE_MAVEN_PASSWORD.finditer(body):
-            val = m.group(1).strip()
-            if val:
-                findings.append(ExtractedFinding(
-                    type="maven_server_password",
-                    value=val,
-                    source_path=path,
-                    note="Maven settings.xml server password",
-                ))
+    is_maven_settings = (
+        ("settings" in filename and ".xml" in filename)
+        or "settings.xml" in path_lower
+        or ("maven" in path_lower and ".xml" in path_lower)
+    )
+    if is_maven_settings:
+        root = _iter_xml_root(body)
+        if root is not None:
+            for server in root.findall(".//server"):
+                server_id = _xml_child_text(server, "id")
+                username = _xml_child_text(server, "username")
+                password = _xml_child_text(server, "password")
+                if password:
+                    note_bits = []
+                    if server_id:
+                        note_bits.append(f"id: {server_id}")
+                    if username:
+                        note_bits.append(f"user: {username}")
+                    findings.append(ExtractedFinding(
+                        type="maven_server_password",
+                        value=password,
+                        source_path=path,
+                        note="Maven settings.xml server password" + (f" ({', '.join(note_bits)})" if note_bits else ""),
+                    ))
+        else:
+            for m in _RE_MAVEN_PASSWORD.finditer(body):
+                val = m.group(1).strip()
+                if val:
+                    findings.append(ExtractedFinding(
+                        type="maven_server_password",
+                        value=val,
+                        source_path=path,
+                        note="Maven settings.xml server password",
+                    ))
 
     # .gem/credentials — RubyGems / GitHub tokens
     if ".gem" in path_lower or "gem/credentials" in path_lower or (
@@ -713,6 +972,66 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
                 source_path=path,
                 note="RubyGems / GitHub gem credential",
             ))
+
+    # Python package index credentials (.pypirc)
+    if ".pypirc" in filename or ".pypirc" in path_lower or "[distutils]" in body.lower():
+        section = None
+        current_user = ""
+        current_password = ""
+        current_repo = ""
+        for raw_line in body.splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith(("#", ";")):
+                continue
+            if line.startswith("[") and line.endswith("]"):
+                if section and current_password:
+                    findings.append(ExtractedFinding(
+                        type="pypirc_credential",
+                        value=f"section={section} username={current_user or '?'} password={current_password}",
+                        source_path=path,
+                        note=f"Python package registry credential{' (' + current_repo + ')' if current_repo else ''}",
+                    ))
+                section = line[1:-1]
+                current_user = ""
+                current_password = ""
+                current_repo = ""
+                continue
+            if "=" not in line:
+                continue
+            key, value = [part.strip() for part in line.split("=", 1)]
+            if key.lower() == "username":
+                current_user = value
+            elif key.lower() == "password":
+                current_password = value
+            elif key.lower() in {"repository", "repository_url"}:
+                current_repo = value
+        if section and current_password:
+            findings.append(ExtractedFinding(
+                type="pypirc_credential",
+                value=f"section={section} username={current_user or '?'} password={current_password}",
+                source_path=path,
+                note=f"Python package registry credential{' (' + current_repo + ')' if current_repo else ''}",
+            ))
+
+    # Terraform CLI credentials
+    if "credentials.tfrc.json" in path_lower or filename == ".terraformrc":
+        try:
+            tf_obj = json.loads(body)
+        except Exception:
+            tf_obj = None
+        if isinstance(tf_obj, dict):
+            creds = tf_obj.get("credentials")
+            if isinstance(creds, dict):
+                for host, host_data in creds.items():
+                    if isinstance(host_data, dict):
+                        token = host_data.get("token")
+                        if isinstance(token, str) and token:
+                            findings.append(ExtractedFinding(
+                                type="terraform_credential",
+                                value=f"{host}: {token}",
+                                source_path=path,
+                                note="Terraform CLI credential token",
+                            ))
 
     # GitHub CLI hosts.yml
     if "gh" in path_lower and ("hosts.yml" in filename or "hosts.yml" in path_lower):
@@ -762,6 +1081,16 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
                     f"Azure MSAL {m.group(1)} — live OAuth token, "
                     "usable directly with az CLI or MSAL libraries. No decryption needed."
                 ),
+            ))
+
+    # Generic Terraform credential file fallback (.terraformrc can be HCL-ish)
+    if filename == ".terraformrc":
+        for m in re.finditer(r'credentials\s+"([^"]+)"\s*\{[^}]*token\s*=\s*"([^"]{8,})"', body, re.IGNORECASE | re.DOTALL):
+            findings.append(ExtractedFinding(
+                type="terraform_credential",
+                value=f"{m.group(1)}: {m.group(2)}",
+                source_path=path,
+                note="Terraform CLI credential token",
             ))
 
     # Ansible vault password file — bare single-line secret
@@ -816,6 +1145,24 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
                         "Register a new runner or access the GitLab API with this token."
                     ),
                 ))
+
+    # GitLab application secrets
+    if "gitlab.rb" in path_lower:
+        for m in _RE_GITLAB_RB_SECRET.finditer(body):
+            findings.append(ExtractedFinding(
+                type="gitlab_secret",
+                value=f"{m.group(1)}={m.group(2)}",
+                source_path=path,
+                note="GitLab Omnibus secret from gitlab.rb",
+            ))
+    if "gitlab-secrets.json" in path_lower:
+        for m in _RE_GITLAB_JSON_SECRET.finditer(body):
+            findings.append(ExtractedFinding(
+                type="gitlab_secret",
+                value=f"{m.group(1)}={m.group(2)}",
+                source_path=path,
+                note="GitLab secret from gitlab-secrets.json",
+            ))
 
     # WinSCP INI — XOR-obfuscated passwords
     body_lower = body.lower()
@@ -1033,23 +1380,27 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
     # Shell history notable lines
     if any(hist in filename for hist in ["history", "_hist"]) or any(hist in path_lower for hist in ["bash_history", "zsh_history", "sh_history", "fish_history", "psql_history", "mysql_history", "python_history"]):
         notable = _RE_SHELL_NOTABLE.findall(body)
-        for line in notable[:20]:
-            findings.append(ExtractedFinding(
-                type="shell_history_notable",
-                value=line.strip(),
-                source_path=path,
-            ))
+        _append_shell_history(findings, path, notable, "Shell", 20)
     else:
         # Still extract shell history notable lines even without filename gate
         # if body looks like shell history (multiple command lines)
         notable = _RE_SHELL_NOTABLE.findall(body)
-        if len(notable) >= 2:
-            for line in notable[:10]:
-                findings.append(ExtractedFinding(
-                    type="shell_history_notable",
-                    value=line.strip(),
-                    source_path=path,
-                ))
+        if len(notable) >= 2 and _looks_like_shell_history_body(body):
+            _append_shell_history(findings, path, notable, "Shell", 10)
+
+    # Windows/system log credential indicators
+    is_windows_log = any(hint in path_lower for hint in (
+        "/windows/logs/", "\\windows\\logs\\", "/windows/debug/", "\\windows\\debug\\",
+        "netsetup.log", "dism.log", "cbs.log",
+    )) or filename.endswith(".log")
+    if is_windows_log:
+        for line in dict.fromkeys(_RE_WINDOWS_LOG_CREDENTIAL_INDICATOR.findall(body)):
+            findings.append(ExtractedFinding(
+                type="windows_log_credential_indicator",
+                value=line.strip(),
+                source_path=path,
+                note="Log evidence indicating a password or credential value was present; review manually",
+            ))
 
     # npm auth token
     for m in _RE_NPMRC_TOKEN.finditer(body):
@@ -1094,12 +1445,16 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
         ))
 
     # MySQL config interesting values
-    for m in _RE_MYSQL_CONFIG.finditer(body):
-        findings.append(ExtractedFinding(
-            type="mysql_config_value",
-            value=f"{m.group(0).strip()}",
-            source_path=path,
-        ))
+    is_mysql_config = any(hint in path_lower for hint in (
+        "my.cnf", "my.ini", "mysqld.cnf", "mysql/", "mariadb/",
+    )) or "[mysqld]" in body.lower()
+    if is_mysql_config:
+        for m in _RE_MYSQL_CONFIG.finditer(body):
+            findings.append(ExtractedFinding(
+                type="mysql_config_value",
+                value=f"{m.group(0).strip()}",
+                source_path=path,
+            ))
 
     # Samba config
     for m in _RE_SAMBA_PASS.finditer(body):
@@ -1303,7 +1658,7 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
                 note="PHP define() constant with credential — common in wp-config.php and framework configs",
             ))
 
-    return _dedupe(findings)
+    return _prune_overlapping_findings(findings)
 
 
 def _extract_binary(result: "ClassifiedResult", findings: list[ExtractedFinding]) -> None:

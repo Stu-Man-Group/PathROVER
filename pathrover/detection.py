@@ -394,8 +394,13 @@ def _is_binary(data: bytes) -> bool:
 
 
 def build_baseline(result: RawResult, all_probes: list[RawResult] | None = None) -> Baseline:
-    body = result.body_bytes
-    probe_lengths = [len(p.body_bytes) for p in all_probes] if all_probes else [len(body)]
+    # Normalize baseline probes the same way scan responses are normalized during
+    # classification. This keeps JSON-envelope endpoints comparable and avoids
+    # systematic false CANDIDATEs caused by comparing wrapped baseline bodies to
+    # unwrapped payload responses.
+    body = _unwrap_response(result.body_bytes)
+    probe_bodies = [_unwrap_response(p.body_bytes) for p in all_probes] if all_probes else [body]
+    probe_lengths = [len(p) for p in probe_bodies]
     return Baseline(
         status=result.status_code,
         length=len(body),

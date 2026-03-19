@@ -62,7 +62,21 @@ class FindingRecord:
     body_preview: str  # kept for internal use but not shown in reports
 
 
-def _dedupe_across_records(records: list[FindingRecord]) -> list["ExtractedFinding"]:
+@dataclass
+class AggregatedFinding:
+    type: str
+    value: str
+    note: str
+    source_paths: list[str]
+
+
+_INDICATOR_TYPES = {
+    "history_sensitive_command",
+    "windows_log_credential_indicator",
+}
+
+
+def _aggregate_findings(records: list[FindingRecord]) -> list[AggregatedFinding]:
     """
     Flatten and deduplicate extracted findings across all records.
 
@@ -76,15 +90,31 @@ def _dedupe_across_records(records: list[FindingRecord]) -> list["ExtractedFindi
     occurrence (earliest in the results list) is kept; all later copies are
     silently discarded.
     """
-    seen: set[tuple[str, str]] = set()
-    out: list[ExtractedFinding] = []
+    seen: dict[tuple[str, str], AggregatedFinding] = {}
     for record in records:
         for f in record.extracted:
             key = (f.type, f.value[:500])
             if key not in seen:
-                seen.add(key)
-                out.append(f)
-    return out
+                seen[key] = AggregatedFinding(
+                    type=f.type,
+                    value=f.value,
+                    note=f.note or "",
+                    source_paths=[f.source_path],
+                )
+            elif f.source_path not in seen[key].source_paths:
+                seen[key].source_paths.append(f.source_path)
+    return list(seen.values())
+
+
+def _split_findings(findings: list[AggregatedFinding]) -> tuple[list[AggregatedFinding], list[AggregatedFinding]]:
+    secrets: list[AggregatedFinding] = []
+    indicators: list[AggregatedFinding] = []
+    for finding in findings:
+        if finding.type in _INDICATOR_TYPES:
+            indicators.append(finding)
+        else:
+            secrets.append(finding)
+    return secrets, indicators
 
 
 def build_finding_records(
@@ -142,14 +172,16 @@ def render_json(meta: ScanMeta, records: list[FindingRecord]) -> str:
     """
     Output confirmed/candidate hits and any extracted sensitive findings.
     """
+    all_findings = _aggregate_findings(records)
     sensitive_findings = [
         {
             "type": e.type,
             "value": e.value,
             "note": e.note or "",
-            "source_path": e.source_path,
+            "source_paths": e.source_paths,
+            "kind": "indicator" if e.type in _INDICATOR_TYPES else "secret",
         }
-        for e in _dedupe_across_records(records)
+        for e in all_findings
     ]
 
     hits = [
@@ -197,8 +229,8 @@ def render_csv(meta: ScanMeta, records: list[FindingRecord]) -> str:
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(["type", "value", "note", "source_path"])
-    for e in _dedupe_across_records(records):
-        writer.writerow([e.type, e.value, e.note or "", e.source_path])
+    for e in _aggregate_findings(records):
+        writer.writerow([e.type, e.value, e.note or "", " | ".join(e.source_paths)])
     # Include hits that had no extracted secrets
     for r in records:
         if not r.extracted:
@@ -351,7 +383,8 @@ def render_html(
 ) -> str:
     from collections import defaultdict
 
-    all_findings = _dedupe_across_records(records)
+    all_findings = _aggregate_findings(records)
+    secret_findings, indicator_findings = _split_findings(all_findings)
 
     # Section 1: all confirmed/candidate hits table
     if records:
@@ -379,20 +412,23 @@ def render_html(
     else:
         hits_html = '<p class="no-findings">No traversal hits detected.</p>'
 
-    # Section 2: extracted secrets grouped by type
-    by_type: dict[str, list] = defaultdict(list)
-    for f in all_findings:
-        by_type[f.type].append(f)
+    def _render_grouped_findings(title: str, findings: list[AggregatedFinding], empty_text: str) -> str:
+        by_type: dict[str, list[AggregatedFinding]] = defaultdict(list)
+        for finding in findings:
+            by_type[finding.type].append(finding)
 
-    if by_type:
-        groups_html = f'<div class="section-heading">Extracted Secrets ({len(all_findings)})</div>'
+        if not by_type:
+            return f'<div class="section-heading">{_e(title)}</div><p class="no-findings">{_e(empty_text)}</p>'
+
+        groups_html = f'<div class="section-heading">{_e(title)} ({len(findings)})</div>'
         for ftype, items in by_type.items():
             cards_html = ""
             for item in items:
                 note_html = f'<div class="finding-note">{_e(item.note)}</div>' if item.note else ""
+                source_list = "<br>".join(_e(path) for path in item.source_paths)
                 cards_html += f"""
       <div class="finding-card">
-        <div class="finding-source">from <span>{_e(item.source_path)}</span></div>
+        <div class="finding-source">from <span>{source_list}</span></div>
         <div class="finding-value"><pre>{_e(item.value)}</pre></div>
         {note_html}
       </div>"""
@@ -401,8 +437,19 @@ def render_html(
       <div class="type-header">{_e(ftype)}</div>
       {cards_html}
     </div>"""
-    else:
-        groups_html = '<div class="section-heading">Extracted Secrets</div><p class="no-findings">No sensitive data extracted from hits.</p>'
+        return groups_html
+
+    # Section 2: extracted secrets grouped by type
+    secrets_html = _render_grouped_findings(
+        "Extracted Secrets",
+        secret_findings,
+        "No high-confidence secrets extracted from hits.",
+    )
+    indicators_html = _render_grouped_findings(
+        "Sensitive Indicators",
+        indicator_findings,
+        "No additional indicators requiring manual review.",
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -416,10 +463,11 @@ def render_html(
 <div class="wrap">
   <div class="header">
     <h1>PathROVER &mdash; {_e(meta.target)}</h1>
-    <div class="meta">{_e(meta.date)} &nbsp;|&nbsp; {len(records)} hit{'s' if len(records) != 1 else ''} &nbsp;|&nbsp; {len(all_findings)} secret{'s' if len(all_findings) != 1 else ''} extracted</div>
+    <div class="meta">{_e(meta.date)} &nbsp;|&nbsp; {len(records)} hit{'s' if len(records) != 1 else ''} &nbsp;|&nbsp; {len(secret_findings)} secret{'s' if len(secret_findings) != 1 else ''} &nbsp;|&nbsp; {len(indicator_findings)} indicator{'s' if len(indicator_findings) != 1 else ''}</div>
   </div>
   {hits_html}
-  {groups_html}
+  {secrets_html}
+  {indicators_html}
 </div>
 </body>
 </html>"""
