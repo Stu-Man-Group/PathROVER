@@ -29,34 +29,52 @@
 
 ---
 
-## Prerequisites
-
-- Python 3.10 or later
-- [`pipx`](https://pipx.pypa.io/)
-
-> **Note: externally managed Python (Kali Linux / Debian 12+ / Ubuntu 23.04+)**
-> These distributions mark the system Python as "externally managed", which
-> means `pip install` is blocked system-wide.  Install `pipx` first, then use
-> it to install PathROVER into an isolated environment:
->
-> ```bash
-> sudo apt install pipx && pipx ensurepath
-> ```
->
-> After running `pipx ensurepath`, open a new shell (or run `source ~/.bashrc`)
-> so that `~/.local/bin` is on your `PATH`.
-
----
-
 ## Installation
 
-Clone the repository, then install with `pipx` from the repo root:
+Requires Python 3.10 or later for any install method below.
+
+### Quick start (recommended)
+
+If you already have [`pipx`](https://pipx.pypa.io/) installed:
 
 ```bash
+git clone git@github.com:KirkpatrickPrice-RavenEye/PathROVER.git
+cd PathROVER
 pipx install .
 ```
 
-This makes `pathrover` available as a command in your shell.
+That's it. `pathrover` is now available in your shell.
+
+Don't have `pipx` yet? See below.
+
+### Installing pipx first
+
+Most modern Linux distros (Kali Linux, Debian 12+, Ubuntu 23.04+) mark the
+system Python as "externally managed," which blocks plain `pip install`.
+Install `pipx` first, then use the Quick start steps above:
+
+```bash
+sudo apt install pipx && pipx ensurepath
+```
+
+Open a new shell (or run `source ~/.bashrc`) afterward so that
+`~/.local/bin` is on your `PATH`.
+
+### Alternative: pip / virtualenv
+
+If you'd rather not install `pipx`, install into a virtual environment
+instead:
+
+```bash
+git clone git@github.com:KirkpatrickPrice-RavenEye/PathROVER.git
+cd PathROVER
+python3 -m venv .venv
+source .venv/bin/activate
+pip install .
+```
+
+`pathrover` will be available in your shell while the virtual environment
+is active.
 
 ---
 
