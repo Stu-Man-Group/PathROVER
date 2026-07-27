@@ -95,6 +95,7 @@ async def run_scan(
     payloads: list[str],
     config: ScanConfig,
     progress_callback=None,
+    baseline_done_callback=None,
 ) -> ScanResult:
     """
     Run a full scan: baseline probes first, then all payloads concurrently.
@@ -104,7 +105,13 @@ async def run_scan(
     The min/max length range is stored so the classifier can ignore
     responses that fall within normal server variance.
 
-    progress_callback: optional callable(completed: int, total: int) called after each result.
+    progress_callback:     optional callable(completed: int, total: int)
+                           called after each payload result.
+    baseline_done_callback: optional callable(baseline_probes: list[RawResult])
+                           called after baseline probes complete and before
+                           payload dispatch begins. Use this to print baseline
+                           info and scan header so the live progress bar
+                           follows immediately after.
     """
     # httpx client: disable SSL verification for pentest targets (self-signed certs common)
     # proxy kwarg varies by httpx version: 0.27+ uses 'proxy', older uses 'proxies'
@@ -122,6 +129,11 @@ async def run_scan(
             )
             for _ in range(3)
         ]
+
+        # Notify caller that baseline is done — they can now print baseline info
+        # and the scan header so that the live progress bar follows immediately.
+        if baseline_done_callback:
+            baseline_done_callback(baseline_probes)
 
         # Dispatch all payloads concurrently, capped by semaphore
         semaphore = asyncio.Semaphore(config.threads)

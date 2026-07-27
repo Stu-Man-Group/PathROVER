@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pathrover.detection import ClassifiedResult, Baseline
+    from pathrover.detection import ClassifiedResult
     from pathrover.extractor import ExtractedFinding
 
 from pathrover import __version__
@@ -148,6 +148,20 @@ def build_finding_records(
                 body_preview = r.body_bytes[:512].decode("utf-8", errors="replace")
             except Exception:
                 pass
+            # If the app wraps responses in a JSON envelope and the data value is
+            # an empty string, the raw preview would show the envelope JSON rather
+            # than meaningful content.  Normalise that to "[empty file]".
+            if body_preview:
+                try:
+                    import json as _json
+                    _parsed = _json.loads(body_preview)
+                    if isinstance(_parsed, dict):
+                        for _key in ("data", "content", "result", "body", "message"):
+                            if _key in _parsed and _parsed[_key] == "":
+                                body_preview = "[empty file]"
+                                break
+                except Exception:
+                    pass
 
         records.append(FindingRecord(
             path=r.payload,
@@ -223,8 +237,9 @@ def render_json(meta: ScanMeta, records: list[FindingRecord]) -> str:
 # ---------------------------------------------------------------------------
 def render_csv(meta: ScanMeta, records: list[FindingRecord]) -> str:
     """
-    One row per extracted sensitive item, plus one row per confirmed hit with
-    no extracted secrets (type="confirmed_hit", value=body preview).
+    One row per extracted sensitive item, plus one row per hit with no
+    extracted secrets (type is "{confidence}_hit", e.g. "confirmed_hit" or
+    "candidate_hit"; value is a body preview).
     """
     buf = io.StringIO()
     writer = csv.writer(buf)

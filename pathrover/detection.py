@@ -455,7 +455,7 @@ def _unwrap_response(body_bytes: bytes) -> bytes:
     return body_bytes
 
 
-def _check_binary_magic(body_bytes: bytes, payload: str) -> tuple[bool, str | None]:
+def _check_binary_magic(body_bytes: bytes) -> tuple[bool, str | None]:
     """Check binary magic bytes against known signatures."""
     for label, magic, offset, _path_patterns in BINARY_SIGNATURES:
         chunk = body_bytes[offset: offset + len(magic)]
@@ -740,7 +740,7 @@ def classify(
                 error=None,
             )
 
-    binary_matched, binary_label = _check_binary_magic(body, result.payload)
+    binary_matched, binary_label = _check_binary_magic(body)
 
     if binary_matched:
         return ClassifiedResult(

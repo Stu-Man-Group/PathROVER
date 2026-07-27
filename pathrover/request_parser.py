@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from urllib.parse import urlparse, urlencode, parse_qsl, quote
+from urllib.parse import parse_qsl
 
 
 ROVER_MARKER = "ROVER"
@@ -63,8 +63,11 @@ def _detect_sep_encoding(text: str) -> str:
 
     prefix = text[:idx]
 
-    # Check for percent-encoded separators in the prefix (last occurrence wins)
-    # Order: look for the separator closest to ROVER, i.e. rightmost match.
+    # Check for percent-encoded separators in the prefix (last occurrence wins).
+    # re.IGNORECASE lets a single pattern match both %2f and %2F in one pass.
+    # The case comparison on the matched group (last == last.upper()) then tells
+    # us which case was actually used in the source text, because .group(0) always
+    # returns the literal matched characters regardless of the IGNORECASE flag.
     lower_pat = re.compile(r'(?:%2f|%5c)', re.IGNORECASE)
     matches = list(lower_pat.finditer(prefix))
     if not matches:
@@ -171,6 +174,14 @@ def parse_raw_request(raw_text: str) -> ParsedRequest:
     # HTTP/2 (and HTTP/3) are always HTTPS. Also handle explicit HTTPS in the request line.
     _rl_upper = request_line.upper()
     scheme = "https" if ("HTTPS" in _rl_upper or "HTTP/2" in _rl_upper or "HTTP/3" in _rl_upper) else "http"
+    # Burp Suite captures HTTPS traffic as HTTP/1.1 in the request line — the scheme
+    # information is lost in the raw format. Fall back to Origin/Referer headers which
+    # browsers always set to the actual scheme, making them reliable HTTPS indicators.
+    if scheme == "http":
+        _origin  = headers.get("Origin", "")
+        _referer = headers.get("Referer", "")
+        if _origin.startswith("https://") or _referer.startswith("https://"):
+            scheme = "https"
     # If host contains a port, use it
     if ":" in host_header:
         hostname, port_str = host_header.rsplit(":", 1)

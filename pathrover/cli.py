@@ -115,7 +115,7 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=10,
         metavar="N",
-        help="Concurrent request threads (default: 10).",
+        help="Number of concurrent async requests (default: 10).",
     )
     parser.add_argument(
         "--threshold",
@@ -215,26 +215,6 @@ def _progress_bar(completed: int, total: int, width: int = 40) -> None:
 
 
 # ---------------------------------------------------------------------------
-# SCAN SUMMARY PRINTER
-# ---------------------------------------------------------------------------
-def _print_summary(records, error_count: int, miss_count: int, duration: float) -> None:
-    from pathrover.reporter import FindingRecord
-    confirmed = sum(1 for r in records if r.confidence == "CONFIRMED")
-    candidates = sum(1 for r in records if r.confidence == "CANDIDATE")
-    total_extracted = sum(len(r.extracted) for r in records if r.confidence == "CONFIRMED")
-
-    print()
-    print(_bold("  ---- Scan Summary ----"))
-    print(f"  Duration        : {duration:.1f}s")
-    print(f"  Confirmed hits  : {_green(str(confirmed))}")
-    print(f"  Candidate hits  : {_yellow(str(candidates))}")
-    print(f"  Misses          : {_dim(str(miss_count))}")
-    print(f"  Errors          : {_dim(str(error_count))}")
-    print(f"  Extracted items : {_cyan(str(total_extracted))}")
-    print()
-
-
-# ---------------------------------------------------------------------------
 # ASYNC CORE
 # ---------------------------------------------------------------------------
 async def _async_main(args: argparse.Namespace) -> int:
@@ -306,17 +286,24 @@ async def _async_main(args: argparse.Namespace) -> int:
 
     start_time = time.monotonic()
 
+    def _on_baseline_done(baseline_probes) -> None:
+        bl = build_baseline(baseline_probes[0], baseline_probes)
+        print(f"  Baseline: status={bl.status}  length={bl.length:,}B  variance={bl.length_min:,}–{bl.length_max:,}B  binary={bl.is_binary}")
+        print()
+        print(_bold(f"  [*] Scanning {len(payloads)} paths..."))
+
     def _on_progress(completed: int, total: int) -> None:
         _progress_bar(completed, total)
 
-    scan_result = await run_scan(parsed, payloads, config, progress_callback=_on_progress)
+    scan_result = await run_scan(
+        parsed, payloads, config,
+        progress_callback=_on_progress,
+        baseline_done_callback=_on_baseline_done,
+    )
     duration = time.monotonic() - start_time
 
     # --- Build baseline ---
     baseline = build_baseline(scan_result.baseline, scan_result.baseline_probes)
-    print(f"  Baseline: status={baseline.status}  length={baseline.length:,}B  variance={baseline.length_min:,}–{baseline.length_max:,}B  binary={baseline.is_binary}")
-    print()
-    print(_bold(f"  [*] Scanning {len(payloads)} paths..."))
 
     # --- Classify ---
     classified = classify_all(scan_result.results, baseline, args.threshold)
@@ -340,12 +327,20 @@ async def _async_main(args: argparse.Namespace) -> int:
     for r in candidate_results:
         print(f"  {_yellow('[CANDIDATE]')} {r.payload}  (status={r.status_code} len={r.response_length:,}B)")
 
-    _print_summary(
-        build_finding_records(classified, extracted_map),
-        error_count,
-        miss_count,
-        duration,
-    )
+    # Compute summary counts directly — avoids a redundant build_finding_records pass.
+    confirmed_count = len(confirmed_results)
+    candidate_count = len(candidate_results)
+    total_extracted = sum(len(v) for v in extracted_map.values())
+
+    print()
+    print(_bold("  ---- Scan Summary ----"))
+    print(f"  Duration        : {duration:.1f}s")
+    print(f"  Confirmed hits  : {_green(str(confirmed_count))}")
+    print(f"  Candidate hits  : {_yellow(str(candidate_count))}")
+    print(f"  Misses          : {_dim(str(miss_count))}")
+    print(f"  Errors          : {_dim(str(error_count))}")
+    print(f"  Extracted items : {_cyan(str(total_extracted))}")
+    print()
 
     # --- Build finding records (CONFIRMED + CANDIDATE) ---
     records = build_finding_records(classified, extracted_map, include_candidates=True)
@@ -357,7 +352,7 @@ async def _async_main(args: argparse.Namespace) -> int:
         date=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         tool_version=__version__,
         duration_seconds=duration,
-        total_requests=len(payloads) + 1,  # +1 for baseline
+        total_requests=len(payloads) + 3,  # +3 for baseline probes
         threads=args.threads,
         threshold=args.threshold,
         proxy=args.proxy,
@@ -381,8 +376,6 @@ async def _async_main(args: argparse.Namespace) -> int:
         content = render_csv(meta, records)
         Path(args.output).write_text(content, encoding="utf-8")
 
-    confirmed_count = len(confirmed_results)
-    candidate_count = len(candidate_results)
     print(_green(f"  [+] Report written: {args.output}"))
     print(_green(f"  [+] Done. {confirmed_count} confirmed, {candidate_count} candidates."))
     print()

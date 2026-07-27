@@ -14,7 +14,8 @@ import base64
 import json
 import re
 import shlex
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
+from xml.etree.ElementTree import Element as _XmlElement
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -60,12 +61,7 @@ _RE_CONNECTION_STRING_XML = re.compile(
 # Intentionally narrower than a generic "auth/private" match to reduce false
 # positives from benign config like AUTH_TYPE, PRIVATE_DIR, TOKEN_URL, etc.
 _RE_ENV_SECRET = re.compile(
-    r'^[ \t]*([A-Za-z_][A-Za-z0-9_]*(?:password|passwd|passphrase|secret(?:_key)?|api_?key|access_?key|private_?key|token|auth_?token|client_?secret|refresh_?token|db_?pass(?:word)?)[A-Za-z0-9_]*)\s*[=:]\s*(.{4,})$',
-    re.IGNORECASE | re.MULTILINE,
-)
-# Broader env var capture (for /proc/self/environ and .env)
-_RE_ENV_ALL_VARS = re.compile(
-    r"^([A-Z_][A-Z0-9_]{2,})\s*=\s*(.+)$",
+    r'^[ \t]*((?:[A-Za-z_][A-Za-z0-9_]*)?(?:password|passwd|passphrase|secret(?:_key)?|api_?key|access_?key|private_?key|token|auth_?token|client_?secret|refresh_?token|db_?pass(?:word)?)[A-Za-z0-9_]*)\s*[=:]\s*(.{4,})$',
     re.IGNORECASE | re.MULTILINE,
 )
 _RE_UNATTEND_PASSWORD = re.compile(
@@ -99,6 +95,13 @@ _RE_KUBE_CERT = re.compile(
 )
 _RE_NPMRC_TOKEN = re.compile(r"//[^:]+:_authToken=([^\s]+)")
 _RE_DOCKER_AUTH = re.compile(r'"auth"\s*:\s*"([A-Za-z0-9+/=]{8,})"')
+# NSS service names that appear after passwd:/shadow:/etc. keywords in nsswitch.conf.
+# These are NOT passwords and must be excluded from config_password findings.
+_NSS_SERVICE_NAMES: frozenset[str] = frozenset({
+    "files", "compat", "nis", "db", "dns",
+    "mdns4_minimal", "mdns4", "mdns", "systemd", "sss", "winbind",
+})
+
 # Generic password patterns in config files  password = secret123
 _RE_GENERIC_PASSWORD = re.compile(
     r'^[ \t]*(?:password|passwd|pass|pwd|db_?pass(?:word)?|secret|auth_?(?:key|token|secret))'
@@ -132,7 +135,13 @@ _RE_REDIS_PASS = re.compile(r"^requirepass\s+(\S+)", re.IGNORECASE | re.MULTILIN
 # Apache htpasswd
 _RE_HTPASSWD = re.compile(r"^([^:]+):(\$apr1\$[^\s]+|\{SHA\}[^\s]+|[a-zA-Z0-9./]{13})\s*$", re.MULTILINE)
 # Vault token (s.xxxxxxxx or hvs.xxxxxxxx)
-_RE_VAULT_TOKEN = re.compile(r"\b((?:s|hvs|hvb)\.[A-Za-z0-9]{20,})\b")
+# HashiCorp Vault token prefixes:
+#   hvs.  = Vault service token (current standard)
+#   hvb.  = Vault batch token
+#   s.    = legacy token prefix (Vault <1.10); narrowed with 28-char minimum to
+#           reduce false positives against version strings / SHA fragments that
+#           start with "s." followed by alphanumerics.
+_RE_VAULT_TOKEN = re.compile(r"\b((?:hvs|hvb)\.[A-Za-z0-9]{20,}|s\.[A-Za-z0-9]{28,})\b")
 # Generic bearer / API tokens in config lines
 _RE_BEARER_TOKEN = re.compile(
     r'(?:Authorization|Bearer|X-Auth-Token|X-API-Key)\s*[=:]\s*["\']?([A-Za-z0-9\-_\.]{20,})["\']?',
@@ -431,7 +440,7 @@ def _append_shell_history(findings: list[ExtractedFinding], path: str, lines: li
         ))
 
 
-def _iter_xml_root(body: str) -> ET.Element | None:
+def _iter_xml_root(body: str) -> _XmlElement | None:
     try:
         return ET.fromstring(body)
     except ET.ParseError:
@@ -447,7 +456,7 @@ def _looks_like_shell_history_body(body: str) -> bool:
     return len(command_like) >= 2
 
 
-def _xml_child_text(elem: ET.Element, child_name: str) -> str:
+def _xml_child_text(elem: _XmlElement, child_name: str) -> str:
     child = elem.find(child_name)
     if child is None or child.text is None:
         return ""
@@ -782,7 +791,7 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
     # Generic password assignments in config files
     for m in _RE_GENERIC_PASSWORD.finditer(body):
         val = m.group(1).strip()
-        if val and val not in ("''", '""', "changeme", "password", "secret", "xxx"):
+        if val and val not in ("''", '""', "changeme", "password", "secret", "xxx") and val.lower() not in _NSS_SERVICE_NAMES:
             findings.append(ExtractedFinding(
                 type="config_password",
                 value=val,
@@ -1256,6 +1265,10 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
             # Filter noise — skip lines that don't look like real accounts
             if not uid.isdigit():
                 continue
+            # Shadow file lines have numeric/empty values in the shell field;
+            # real passwd entries always have an absolute path there.
+            if not shell.startswith("/"):
+                continue
             if pw_field not in ("x", "*", "!!", "!", ""):
                 findings.append(ExtractedFinding(
                     type="unix_password_hash",
@@ -1307,8 +1320,7 @@ def extract(result: "ClassifiedResult") -> list[ExtractedFinding]:
             # Null bytes stripped by the server: attempt to split on KEY= boundaries
             # by inserting newlines before any run of UPPER_CASE= that looks like an
             # env var name (must start at a word boundary after the previous value).
-            import re as _re
-            environ_text = _re.sub(r'(?<=[^\n])([A-Z_][A-Z0-9_]{2,}=)', r'\n\1', body)
+            environ_text = re.sub(r'(?<=[^\n])([A-Z_][A-Z0-9_]{2,}=)', r'\n\1', body)
         for m in _RE_ENV_SECRET.finditer(environ_text):
             val = m.group(2).strip()
             findings.append(ExtractedFinding(

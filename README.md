@@ -34,6 +34,18 @@
 - Python 3.10 or later
 - [`pipx`](https://pipx.pypa.io/)
 
+> **Note — externally managed Python (Kali Linux / Debian 12+ / Ubuntu 23.04+)**
+> These distributions mark the system Python as "externally managed", which
+> means `pip install` is blocked system-wide.  Install `pipx` first, then use
+> it to install PathROVER into an isolated environment:
+>
+> ```bash
+> sudo apt install pipx && pipx ensurepath
+> ```
+>
+> After running `pipx ensurepath`, open a new shell (or run `source ~/.bashrc`)
+> so that `~/.local/bin` is on your `PATH`.
+
 ---
 
 ## Installation
@@ -62,7 +74,7 @@ pathrover -r <request_file> --os <os> --report-type <format> --output <file> [op
 | `--os` | yes | — | Target OS. One of: `linux`, `windows`, `macos`. |
 | `--report-type` | yes | — | Output format. One of: `html`, `json`, `csv`. |
 | `--output` | yes | — | Output file path for the report. |
-| `--threads` | no | `10` | Number of concurrent requests (1–200). |
+| `--threads` | no | `10` | Number of concurrent async requests (1–200). |
 | `--threshold` | no | `5` | Response length delta % to flag as CANDIDATE (0–100). |
 | `--timeout` | no | `10` | Per-request timeout in seconds (1–300). |
 | `--proxy` | no | — | HTTP/HTTPS proxy URL (e.g. `http://127.0.0.1:8080`). |
@@ -133,3 +145,11 @@ parameters, and JSON body fields.
 ## License
 
 [MIT](LICENSE) — Copyright (c) 2026 stusko
+
+---
+
+## Known behaviors
+
+- **SSL verification is disabled.** PathROVER sets `verify=False` on all HTTPS connections. This is intentional — pentest targets commonly use self-signed certificates. It means all HTTPS traffic is susceptible to MITM interception. Only run PathROVER on networks you control or trust.
+
+- **Report files contain sensitive data.** Confirmed hits produce reports with extracted credentials, private keys, and tokens in plaintext. The `.gitignore` in this repository excludes all three report formats (`*.html`, `*.csv`, `*.json`). Never commit report output to version control.
