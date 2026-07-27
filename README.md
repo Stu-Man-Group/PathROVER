@@ -93,13 +93,13 @@ pathrover -r req.txt --os macos --report-type csv --output out.csv --proxy http:
 ## Request file format
 
 PathROVER accepts a raw HTTP request in Burp Suite format. Place the `ROVER`
-marker at every injection point you want tested, and it will be replaced with each
-payload during the scan.
+marker after a traversal prefix at the injection point you want tested, and
+it will be replaced with each payload during the scan.
 
 **Example: query parameter**
 
 ```
-GET /download?file=ROVER HTTP/1.1
+GET /download?file=../../../../../../../ROVER HTTP/1.1
 Host: example.com
 User-Agent: Mozilla/5.0
 Accept: */*
@@ -111,9 +111,9 @@ Accept: */*
 POST /api/fetch HTTP/1.1
 Host: example.com
 Content-Type: application/json
-Content-Length: 23
+Content-Length: 37
 
-{"path":"ROVER"}
+{"path":"../../../../../../../ROVER"}
 ```
 
 The marker is supported in the URL path, query parameters, headers, form body
