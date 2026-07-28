@@ -38,7 +38,7 @@ Requires Python 3.10 or later for any install method below.
 If you already have [`pipx`](https://pipx.pypa.io/) installed:
 
 ```bash
-git clone git@github.com:KirkpatrickPrice-RavenEye/PathROVER.git
+git clone https://github.com/Stu-Man-Group/PathROVER.git
 cd PathROVER
 pipx install .
 ```
@@ -66,7 +66,7 @@ If you'd rather not install `pipx`, install into a virtual environment
 instead:
 
 ```bash
-git clone git@github.com:KirkpatrickPrice-RavenEye/PathROVER.git
+git clone https://github.com/Stu-Man-Group/PathROVER.git
 cd PathROVER
 python3 -m venv .venv
 source .venv/bin/activate
