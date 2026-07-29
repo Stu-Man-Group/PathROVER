@@ -7,7 +7,7 @@
 ╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═╝
 ```
 
-**Automated path traversal exploitation for confirmed vulnerabilities.**
+**Automated path traversal exploitation and sensitive data extraction for confirmed vulnerabilities in authorized penetration tests.**
 
 ---
 
